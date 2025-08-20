@@ -236,6 +236,29 @@
   }
 }
 
+/* Invert colors on hover for buttons (prevents text disappearing) */
+@media (hover: hover) and (pointer: fine) {
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  a.button {
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+  }
+
+  button:hover,
+  [role="button"]:hover,
+  input[type="button"]:hover,
+  input[type="submit"]:hover,
+  input[type="reset"]:hover,
+  a.button:hover {
+    filter: invert(1) hue-rotate(180deg);
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
 /* Onboarding highlight animation */
 .onboarding-highlight {
   animation: highlight-pulse 2s ease-in-out infinite;

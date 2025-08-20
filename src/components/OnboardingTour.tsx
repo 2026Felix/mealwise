@@ -129,7 +129,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onComplete, onS
           </div>
           <button
             onClick={onSkip}
-            className="text-xs sm:text-sm text-black hover:text-gray-600 transition-colors font-medium"
+            className="text-xs sm:text-sm text-text hover:text-text/80 transition-colors font-medium"
           >
             Hoppa över
           </button>
@@ -170,7 +170,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onComplete, onS
             className={`p-2 sm:p-3 rounded-lg transition-colors ${
               currentStep === 0
                 ? 'text-gray-300 cursor-not-allowed'
-                : 'text-black hover:bg-gray-100'
+                : 'text-text hover:bg-gray-100'
             }`}
           >
             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +180,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onComplete, onS
 
           <button
             onClick={nextStep}
-            className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 bg-black text-white text-sm sm:text-base font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            className="bg-text text-background px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base hover:bg-text/90 transition-all duration-300 transform hover:scale-105"
           >
             {currentStep === steps.length - 1 ? 'Börja använda' : 'Nästa'}
           </button>
