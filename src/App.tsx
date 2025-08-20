@@ -6,7 +6,6 @@ import PrivacyPolicy from './components/PrivacyPolicy'
 import TermsOfUse from './components/TermsOfUse'
 import Contact from './components/Contact'
 import Feedback from './components/Feedback'
-import Admin from './components/Admin'
 import { RecipeProvider } from './context/RecipeContext'
 
 import ErrorBoundary from './components/ErrorBoundary'
@@ -216,7 +215,6 @@ const AppContent: React.FC = () => {
       {route === '#/terms' && <TermsOfUse />}
       {route === '#/contact' && <Contact />}
       {route === '#/feedback' && <Feedback />}
-      {route === '#/admin' && <Admin />}
       
       {/* Footer */}
       <footer className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto py-6 sm:py-8 mt-8 sm:mt-12 md:mt-16 border-t border-text/10">
