@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-const PLAUSIBLE_DOMAIN: string | undefined = import.meta.env.VITE_PLAUSIBLE_DOMAIN
+const PLAUSIBLE_DOMAIN: string | undefined = import.meta.env.VITE_PLAUSIBLE_DOMAIN || 'mealwise-ivory.vercel.app'
 const IS_PRODUCTION = import.meta.env.PROD
 const ANALYTICS_ENABLED = Boolean(PLAUSIBLE_DOMAIN) && IS_PRODUCTION
 
