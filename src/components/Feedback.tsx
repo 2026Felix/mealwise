@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 interface FeedbackData {
+  id: string
   message: string
   email?: string
   timestamp: string
@@ -13,36 +14,20 @@ const Feedback: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
-  const createGitHubIssue = async (feedbackData: FeedbackData): Promise<void> => {
-    // GitHub API endpoint för att skapa issues
-    const response = await fetch('https://api.github.com/repos/Felix2026/FoodApp/issues', {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${import.meta.env.VITE_GITHUB_TOKEN || ''}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: `Feedback: ${feedbackData.message.substring(0, 50)}${feedbackData.message.length > 50 ? '...' : ''}`,
-        body: `## Feedback från webbplatsen
-
-**Meddelande:**
-${feedbackData.message}
-
-**E-post:** ${feedbackData.email || 'Ej angivet'}
-
-**Tidpunkt:** ${feedbackData.timestamp}
-
-**Webbläsare:** ${feedbackData.userAgent}
-
----
-*Skickat via Mealwise Feedback-formulär*`,
-        labels: ['feedback', 'website'],
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`)
+  const saveFeedbackToLocalStorage = (feedbackData: FeedbackData): void => {
+    try {
+      // Hämta befintlig feedback från localStorage
+      const existingFeedback = localStorage.getItem('mealwise-feedback')
+      const feedbackArray: FeedbackData[] = existingFeedback ? JSON.parse(existingFeedback) : []
+      
+      // Lägg till ny feedback
+      feedbackArray.push(feedbackData)
+      
+      // Spara tillbaka till localStorage
+      localStorage.setItem('mealwise-feedback', JSON.stringify(feedbackArray))
+    } catch (error) {
+      console.error('Error saving feedback:', error)
+      throw new Error('Kunde inte spara feedback lokalt')
     }
   }
 
@@ -60,13 +45,14 @@ ${feedbackData.message}
 
     try {
       const feedbackData: FeedbackData = {
+        id: Date.now().toString(),
         message: message.trim(),
         email: email.trim() || undefined,
         timestamp: new Date().toLocaleString('sv-SE'),
         userAgent: navigator.userAgent,
       }
 
-      await createGitHubIssue(feedbackData)
+      saveFeedbackToLocalStorage(feedbackData)
       
       setStatus('sent')
       setMessage('')
@@ -74,7 +60,7 @@ ${feedbackData.message}
     } catch (error) {
       console.error('Feedback error:', error)
       setStatus('error')
-      setErrorMessage('Kunde inte skicka feedback. Försök igen senare.')
+      setErrorMessage('Kunde inte spara feedback. Försök igen senare.')
     }
   }
 
@@ -129,7 +115,7 @@ ${feedbackData.message}
             )}
             
             {status === 'sent' && (
-              <span className="text-green-600 text-sm">Tack! Din feedback har skickats.</span>
+              <span className="text-green-600 text-sm">Tack! Din feedback har sparats.</span>
             )}
           </div>
         </form>
