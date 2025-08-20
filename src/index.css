@@ -1,0 +1,278 @@
+/* SF Pro Display font import */
+@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode colors */
+    --background: #ffffff;
+    --component: #f8fafc;
+    --text: #1e293b;
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --background: #0f172a;
+    --component: #1e293b;
+    --text: #f1f5f9;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Ensure dialogs/modals inherit theme variables */
+  dialog, .modal, .mobile-modal {
+    background-color: var(--component);
+    color: var(--text);
+  }
+}
+
+/* Custom scrollbar styles for both light and dark modes */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text);
+  opacity: 0.2;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.3;
+}
+
+/* Responsive touch improvements */
+@layer utilities {
+  /* Touch-friendly button sizes */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved touch scrolling */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Better focus states for mobile */
+  .focus-visible:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+  
+  /* Responsive text sizing */
+  .text-responsive-xs {
+    font-size: clamp(0.75rem, 2vw, 0.875rem);
+  }
+  
+  .text-responsive-sm {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+  
+  .text-responsive-base {
+    font-size: clamp(1rem, 3vw, 1.125rem);
+  }
+  
+  .text-responsive-lg {
+    font-size: clamp(1.125rem, 3.5vw, 1.25rem);
+  }
+  
+  .text-responsive-xl {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+  }
+  
+  .text-responsive-2xl {
+    font-size: clamp(1.5rem, 5vw, 1.875rem);
+  }
+  
+  .text-responsive-3xl {
+    font-size: clamp(1.875rem, 6vw, 2.25rem);
+  }
+  
+  .text-responsive-4xl {
+    font-size: clamp(2.25rem, 7vw, 3rem);
+  }
+  
+  .text-responsive-5xl {
+    font-size: clamp(3rem, 8vw, 4rem);
+  }
+  
+  .text-responsive-6xl {
+    font-size: clamp(4rem, 10vw, 6rem);
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Better touch targets */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved input fields */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Better spacing for mobile */
+  .mobile-spacing > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Improved drag and drop on mobile */
+  [draggable="true"] {
+    touch-action: none;
+    user-select: none;
+  }
+  
+  /* Touch-optimized interactions */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Prevent text selection on touch */
+  .touch-select-none {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Better touch feedback */
+  .touch-feedback:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Medium touch targets */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Desktop improvements */
+@media (min-width: 1025px) {
+  /* Hover effects only on desktop */
+  .hover\:bg-text\/90:hover {
+    background-color: rgb(var(--text) / 0.9);
+  }
+  
+  .hover\:bg-text\/80:hover {
+    background-color: rgb(var(--text) / 0.8);
+  }
+  
+  .hover\:text-text\/80:hover {
+    color: rgb(var(--text) / 0.8);
+  }
+  
+  .hover\:bg-gray-50:hover {
+    background-color: rgb(249 250 251);
+  }
+  
+  .hover\:border-gray-300:hover {
+    border-color: rgb(209 213 219);
+  }
+  
+  .hover\:bg-gray-100:hover {
+    background-color: rgb(243 244 246);
+  }
+  
+  .hover\:bg-gray-600:hover {
+    background-color: rgb(75 85 99);
+  }
+  
+  .hover\:bg-gray-700:hover {
+    background-color: rgb(55 65 81);
+  }
+  
+  .hover\:text-gray-300:hover {
+    color: rgb(209 213 219);
+  }
+  
+  .hover\:text-red-300:hover {
+    color: rgb(252 165 165);
+  }
+  
+  .hover\:text-blue-300:hover {
+    color: rgb(147 197 253);
+  }
+  
+  .hover\:shadow-md:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+  
+  .hover\:shadow-lg:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+}
+
+/* Onboarding highlight animation */
+.onboarding-highlight {
+  animation: highlight-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Mobile drag and drop improvements */
+@media (max-width: 768px) {
+  /* Disable drag on mobile */
+  [draggable="true"] {
+    cursor: default !important;
+  }
+  
+  /* Touch-friendly modal */
+  .mobile-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better touch feedback for buttons */
+  button:active {
+    transform: scale(0.98);
+  }
+  
+  /* Improved touch scrolling */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
