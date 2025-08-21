@@ -72,7 +72,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 	
 	return (
 		<div 
-			className={`bg-white border-2 border-dashed rounded-lg p-2 sm:p-3 transition-all duration-200 hover:shadow-md ${
+			className={`bg-white border-2 border-dashed rounded-lg p-2 sm:p-3 transition-colors duration-200 hover:bg-gray-50 ${
 				isDragging ? 'opacity-50 scale-95' : ''
 			} h-12 sm:h-16 relative group touch-manipulation ${isMobile && onAddToDay ? 'cursor-pointer' : ''}`}
 			style={{

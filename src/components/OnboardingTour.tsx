@@ -116,7 +116,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onComplete, onS
       
       {/* Tour tooltip */}
       <div 
-        className="fixed z-50 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] max-w-4xl bg-white border-0 rounded-2xl shadow-lg p-4 sm:p-6 md:p-10 transition-all duration-300"
+        className="fixed z-50 w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] max-w-4xl bg-white border-0 rounded-2xl shadow-lg p-4 sm:p-6 md:p-10 transition-colors duration-200"
         style={{
           top: position.top,
           left: position.left,
@@ -139,7 +139,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onComplete, onS
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-black h-2 rounded-full transition-all duration-300"
+              className="bg-black h-2 rounded-full transition-colors duration-200"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             />
           </div>
@@ -180,7 +180,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onComplete, onS
 
           <button
             onClick={nextStep}
-            className="bg-text text-background px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base hover:bg-text/90 transition-all duration-300 transform hover:scale-105"
+            className="bg-text text-background px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-lg font-medium text-sm sm:text-base hover:bg-text/90 transition-colors duration-200"
           >
             {currentStep === steps.length - 1 ? 'Börja använda' : 'Nästa'}
           </button>

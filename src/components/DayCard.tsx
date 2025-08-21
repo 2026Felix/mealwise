@@ -75,15 +75,25 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 		}
 		
 		const sourceDay = e.dataTransfer.getData('source-day')
+		const sourceInstanceId = e.dataTransfer.getData('source-instance-id')
 		
 		// Om receptet kommer från en annan dag, flytta det istället för att lägga till
-		if (sourceDay && sourceDay !== day.day) {
-			dispatch({
-				type: 'MOVE_RECIPE_BETWEEN_DAYS',
-				fromDay: sourceDay,
-				toDay: day.day,
-				recipe
-			})
+		if (sourceDay && sourceDay !== day.day && sourceInstanceId) {
+			// Vi skickar med den fullständiga måltidsinstansen i drag-datan
+			const mealInstanceData = e.dataTransfer.getData('meal-instance')
+			if (mealInstanceData) {
+				try {
+					const mealInstanceToMove = JSON.parse(mealInstanceData)
+					dispatch({
+						type: 'MOVE_RECIPE_BETWEEN_DAYS',
+						fromDay: sourceDay,
+						toDay: day.day,
+						mealInstance: mealInstanceToMove
+					})
+				} catch (error) {
+					console.warn('Failed to parse meal instance data:', error)
+				}
+			}
 		} else {
 			// Lägg till nytt recept från biblioteket
 			dispatch({
@@ -94,11 +104,11 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 		}
 	}
 
-	const removeRecipe = (recipeId: string) => {
+	const removeRecipe = (instanceId: string) => {
 		dispatch({
 			type: 'REMOVE_RECIPE_FROM_DAY',
 			day: day.day,
-			recipeId
+			instanceId
 		})
 	}
 
@@ -115,7 +125,7 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 			{/* Drop-zon med förbättrad feedback */}
 			<div
 				ref={dropZoneRef}
-				className={`min-h-[48px] sm:min-h-[64px] rounded-lg border-2 border-dashed transition-all duration-200 ${
+				className={`min-h-[48px] sm:min-h-[64px] rounded-lg border-2 border-dashed transition-colors duration-200 ${
 					isDragOver
 						? 'border-text bg-text/10 scale-[1.02] shadow-lg'
 						: isGlobalDragActive
@@ -129,7 +139,7 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 			>
 				{day.recipes.length === 0 ? (
 					// Tom dag - visa hjälptext
-					<div className={`h-full w-full flex flex-col items-center justify-center p-1 sm:p-2 text-center transition-all duration-200 ${
+					<div className={`h-full w-full flex flex-col items-center justify-center p-1 sm:p-2 text-center transition-colors duration-200 ${
 						isDragOver ? 'text-text' : 'text-text/60'
 					}`}>
 						{isDragOver ? (
@@ -148,12 +158,12 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 				) : (
 					// Recept som redan finns - visa i grid-layout
 					<div className="grid grid-cols-1 sm:grid-cols-2 auto-rows-[48px] sm:auto-rows-[64px] gap-1 sm:gap-1.5 p-1 sm:p-1.5">
-						{day.recipes.map((recipe) => {
-							const categoryColor = getCategoryColor(recipe.category)
+						{day.recipes.map((mealInstance) => {
+							const categoryColor = getCategoryColor(mealInstance.recipe.category)
 							return (
 								<div
-									key={recipe.id}
-									className="bg-background rounded-lg p-1.5 sm:p-2 h-full cursor-move relative group hover:shadow-md transition-all duration-200 border touch-manipulation"
+									key={mealInstance.instanceId}
+									className="bg-background rounded-lg p-1.5 sm:p-2 h-full cursor-move relative group hover:bg-background/80 transition-colors duration-200 border touch-manipulation"
 									style={{
 										borderColor: categoryColor !== 'transparent' ? categoryColor : undefined,
 										borderWidth: categoryColor !== 'transparent' ? '2px' : '1px'
@@ -161,15 +171,17 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 									draggable={!isMobile}
 									onDragStart={(e) => {
 										if (isMobile) return
-										e.dataTransfer.setData('application/json', JSON.stringify(recipe))
+										e.dataTransfer.setData('application/json', JSON.stringify(mealInstance.recipe))
 										e.dataTransfer.setData('source-day', day.day)
+										e.dataTransfer.setData('source-instance-id', mealInstance.instanceId)
+										e.dataTransfer.setData('meal-instance', JSON.stringify(mealInstance))
 										e.dataTransfer.effectAllowed = 'move'
 									}}
 								>
 									{/* Ta bort-knapp */}
 									<button
-										onClick={() => removeRecipe(recipe.id)}
-										className="absolute -top-0.5 -right-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md touch-target"
+										onClick={() => removeRecipe(mealInstance.instanceId)}
+										className="absolute -top-0.5 -right-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-colors duration-200 flex items-center justify-center touch-target"
 										title="Ta bort recept"
 									>
 										<X className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
@@ -179,8 +191,8 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 									<div className="flex items-center justify-center h-full">
 										{/* Recept-info (endast namn) */}
 										<div className="flex-1 min-w-0 text-center">
-											<h4 className="font-medium text-text text-xs sm:text-sm leading-none truncate" title={recipe.name}>
-												{recipe.name}
+											<h4 className="font-medium text-text text-xs sm:text-sm leading-none truncate" title={mealInstance.recipe.name}>
+												{mealInstance.recipe.name}
 											</h4>
 										</div>
 									</div>

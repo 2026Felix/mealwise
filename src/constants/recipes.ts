@@ -48,21 +48,21 @@ const baseRecipes: Recipe[] = [
     { name: 'Mjöl', quantity: 250, unit: 'g' },
     { name: 'Ägg', quantity: 3, unit: 'st' },
     { name: 'Bacon', quantity: 150, unit: 'g' }
-  ], 40, 'carbs', 'easy'),
+  ], 40, 'protein', 'easy'),
 
   make(6, 'Janssons frestelse', [
     { name: 'Potatis', quantity: 700, unit: 'g' },
     { name: 'Ansjovis', quantity: 120, unit: 'g' },
     { name: 'Lök', quantity: 1, unit: 'st' },
     { name: 'Grädde', quantity: 300, unit: 'ml' }
-  ], 60, 'carbs', 'medium'),
+  ], 60, 'protein', 'medium'),
 
   make(7, 'Raggmunk med fläsk', [
     { name: 'Potatis', quantity: 600, unit: 'g' },
     { name: 'Mjölk', quantity: 300, unit: 'ml' },
     { name: 'Mjöl', quantity: 120, unit: 'g' },
     { name: 'Rökt sidfläsk', quantity: 200, unit: 'g' }
-  ], 45, 'carbs', 'medium'),
+  ], 45, 'protein', 'medium'),
 
   make(8, 'Stekt strömming med mos', [
     { name: 'Strömmingsfilé', quantity: 400, unit: 'g' },
@@ -146,7 +146,7 @@ const baseRecipes: Recipe[] = [
     { name: 'Lax', quantity: 200, unit: 'g' },
     { name: 'Grädde', quantity: 150, unit: 'ml' },
     { name: 'Dill', quantity: 1, unit: 'kruka' }
-  ], 25, 'carbs', 'easy'),
+  ], 25, 'protein', 'easy'),
 
   make(20, 'Kyckling i ugn med rotfrukter', [
     { name: 'Kycklinglår', quantity: 600, unit: 'g' },
@@ -174,14 +174,14 @@ const baseRecipes: Recipe[] = [
     { name: 'Nötfärs', quantity: 400, unit: 'g' },
     { name: 'Krossade tomater', quantity: 400, unit: 'g' },
     { name: 'Ost', quantity: 150, unit: 'g' }
-  ], 50, 'carbs', 'medium'),
+  ], 50, 'protein', 'medium'),
 
   make(24, 'Tacopaj', [
     { name: 'Pajdeg', quantity: 1, unit: 'st' },
     { name: 'Nötfärs', quantity: 400, unit: 'g' },
     { name: 'Taco-krydda', quantity: 1, unit: 'påse' },
     { name: 'Ost', quantity: 150, unit: 'g' }
-  ], 45, 'carbs', 'easy'),
+  ], 45, 'protein', 'easy'),
 
   make(25, 'Färsbiffar med lök', [
     { name: 'Blandfärs', quantity: 500, unit: 'g' },
@@ -223,14 +223,156 @@ const baseRecipes: Recipe[] = [
     { name: 'Krossade tomater', quantity: 400, unit: 'g' },
     { name: 'Lök', quantity: 1, unit: 'st' },
     { name: 'Spiskummin', quantity: 1, unit: 'tsk' }
-  ], 30, 'vegetables', 'easy')
+  ], 30, 'vegetables', 'easy'),
+
+  // Nya vegetariska recept
+  make(31, 'Vegetarisk lasagne', [
+    { name: 'Lasagneplattor', quantity: 250, unit: 'g' },
+    { name: 'Quornfärs', quantity: 400, unit: 'g' },
+    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
+    { name: 'Ost', quantity: 150, unit: 'g' }
+  ], 50, 'vegetables', 'medium'),
+
+  make(32, 'Vegetarisk tacopaj', [
+    { name: 'Pajdeg', quantity: 1, unit: 'st' },
+    { name: 'Quornfärs', quantity: 400, unit: 'g' },
+    { name: 'Taco-krydda', quantity: 1, unit: 'påse' },
+    { name: 'Ost', quantity: 150, unit: 'g' }
+  ], 45, 'vegetables', 'easy'),
+
+  make(33, 'Vegetarisk pytt i panna', [
+    { name: 'Potatis', quantity: 500, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' },
+    { name: 'Quornfärs', quantity: 300, unit: 'g' },
+    { name: 'Ägg', quantity: 2, unit: 'st' }
+  ], 30, 'vegetables', 'easy'),
+
+  make(34, 'Vegetarisk ärtsoppa', [
+    { name: 'Gula ärtor', quantity: 300, unit: 'g' },
+    { name: 'Morot', quantity: 200, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' },
+    { name: 'Vatten', quantity: 1000, unit: 'ml' }
+  ], 90, 'vegetables', 'medium'),
+
+  make(35, 'Vegetarisk kåldolmar', [
+    { name: 'Vitkål', quantity: 1, unit: 'st' },
+    { name: 'Quornfärs', quantity: 500, unit: 'g' },
+    { name: 'Ris', quantity: 100, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' }
+  ], 80, 'vegetables', 'hard'),
+
+  make(36, 'Vegetarisk kålpudding', [
+    { name: 'Vitkål', quantity: 700, unit: 'g' },
+    { name: 'Quornfärs', quantity: 500, unit: 'g' },
+    { name: 'Sirap', quantity: 2, unit: 'msk' },
+    { name: 'Lök', quantity: 1, unit: 'st' }
+  ], 70, 'vegetables', 'medium'),
+
+  make(37, 'Vegetarisk falukorv i ugn', [
+    { name: 'Vegetarisk korv', quantity: 500, unit: 'g' },
+    { name: 'Potatis', quantity: 600, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' },
+    { name: 'Ost', quantity: 100, unit: 'g' }
+  ], 40, 'vegetables', 'easy'),
+
+  make(38, 'Vegetarisk fiskgratäng', [
+    { name: 'Vegetarisk fisk', quantity: 400, unit: 'g' },
+    { name: 'Grädde', quantity: 200, unit: 'ml' },
+    { name: 'Dill', quantity: 1, unit: 'kruka' },
+    { name: 'Potatis', quantity: 500, unit: 'g' }
+  ], 45, 'vegetables', 'medium'),
+
+  make(39, 'Vegetarisk laxpasta', [
+    { name: 'Pasta', quantity: 250, unit: 'g' },
+    { name: 'Vegetarisk lax', quantity: 200, unit: 'g' },
+    { name: 'Grädde', quantity: 150, unit: 'ml' },
+    { name: 'Dill', quantity: 1, unit: 'kruka' }
+  ], 25, 'vegetables', 'easy'),
+
+  make(40, 'Vegetarisk kycklinggryta', [
+    { name: 'Vegetarisk kyckling', quantity: 400, unit: 'g' },
+    { name: 'Grädde', quantity: 200, unit: 'ml' },
+    { name: 'Currypulver', quantity: 2, unit: 'tsk' },
+    { name: 'Lök', quantity: 1, unit: 'st' }
+  ], 30, 'vegetables', 'easy'),
+
+  // Nya snabba recept
+  make(41, 'Snabb vegetarisk pasta', [
+    { name: 'Pasta', quantity: 250, unit: 'g' },
+    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
+    { name: 'Ost', quantity: 100, unit: 'g' },
+    { name: 'Basilika', quantity: 1, unit: 'kruka' }
+  ], 15, 'vegetables', 'easy'),
+
+  make(42, 'Snabb vegetarisk soppa', [
+    { name: 'Grönsaksbuljong', quantity: 1000, unit: 'ml' },
+    { name: 'Morot', quantity: 200, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' },
+    { name: 'Pasta', quantity: 100, unit: 'g' }
+  ], 20, 'vegetables', 'easy'),
+
+  make(43, 'Snabb vegetarisk omelett', [
+    { name: 'Ägg', quantity: 4, unit: 'st' },
+    { name: 'Ost', quantity: 100, unit: 'g' },
+    { name: 'Tomat', quantity: 1, unit: 'st' },
+    { name: 'Basilika', quantity: 1, unit: 'kruka' }
+  ], 15, 'vegetables', 'easy'),
+
+  make(44, 'Snabb vegetarisk risotto', [
+    { name: 'Ris', quantity: 200, unit: 'g' },
+    { name: 'Grönsaksbuljong', quantity: 600, unit: 'ml' },
+    { name: 'Ost', quantity: 100, unit: 'g' },
+    { name: 'Svamp', quantity: 200, unit: 'g' }
+  ], 25, 'vegetables', 'easy'),
+
+  make(45, 'Snabb vegetarisk pizza', [
+    { name: 'Pizzadeg', quantity: 1, unit: 'st' },
+    { name: 'Krossade tomater', quantity: 200, unit: 'g' },
+    { name: 'Ost', quantity: 150, unit: 'g' },
+    { name: 'Champinjoner', quantity: 200, unit: 'g' }
+  ], 20, 'vegetables', 'easy'),
+
+  // Nya enkla recept
+  make(46, 'Enkel vegetarisk sallad', [
+    { name: 'Salladsblad', quantity: 200, unit: 'g' },
+    { name: 'Tomat', quantity: 2, unit: 'st' },
+    { name: 'Gurka', quantity: 1, unit: 'st' },
+    { name: 'Olivolja', quantity: 30, unit: 'ml' }
+  ], 10, 'vegetables', 'easy'),
+
+  make(47, 'Enkel vegetarisk soppa', [
+    { name: 'Grönsaksbuljong', quantity: 1000, unit: 'ml' },
+    { name: 'Morot', quantity: 300, unit: 'g' },
+    { name: 'Lök', quantity: 2, unit: 'st' },
+    { name: 'Potatis', quantity: 400, unit: 'g' }
+  ], 30, 'vegetables', 'easy'),
+
+  make(48, 'Enkel vegetarisk gratäng', [
+    { name: 'Potatis', quantity: 600, unit: 'g' },
+    { name: 'Grädde', quantity: 200, unit: 'ml' },
+    { name: 'Ost', quantity: 150, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' }
+  ], 45, 'vegetables', 'easy'),
+
+  make(49, 'Enkel vegetarisk paj', [
+    { name: 'Pajdeg', quantity: 1, unit: 'st' },
+    { name: 'Ägg', quantity: 3, unit: 'st' },
+    { name: 'Grädde', quantity: 200, unit: 'ml' },
+    { name: 'Ost', quantity: 100, unit: 'g' }
+  ], 40, 'vegetables', 'easy'),
+
+  make(50, 'Enkel vegetarisk gryta', [
+    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
+    { name: 'Linser', quantity: 200, unit: 'g' },
+    { name: 'Lök', quantity: 1, unit: 'st' },
+    { name: 'Morot', quantity: 200, unit: 'g' }
+  ], 35, 'vegetables', 'easy')
 ]
 
-function variantsFrom(recipe: Recipe, index: number): Recipe[] {
-  const idBase = Number(recipe.id)
+function variantsFrom(recipe: Recipe, _index: number, currentId: number): Recipe[] {
   const v1: Recipe = {
     ...recipe,
-    id: String(idBase + index * 2000 + 1),
+    id: String(currentId),
     name: `${recipe.name} – snabb variant`,
     prepTime: Math.max(15, Math.round(recipe.prepTime * 0.75)),
     ingredients: recipe.ingredients.map(i =>
@@ -239,7 +381,7 @@ function variantsFrom(recipe: Recipe, index: number): Recipe[] {
   }
   const v2: Recipe = {
     ...recipe,
-    id: String(idBase + index * 2000 + 2),
+    id: String(currentId + 1),
     name: `${recipe.name} – festlig variant`,
     prepTime: Math.round(recipe.prepTime * 1.2),
     ingredients: [
@@ -255,13 +397,19 @@ export function expandToHundred(base: Recipe[]): Recipe[] {
   let out = [...normalized]
 
   let idx = 0
+  let variantCounter = 0
+  let currentId = normalized.length + 1
+  
   while (out.length < 100) {
     const seed = normalized[idx % normalized.length]
-    out.push(...variantsFrom(seed, Math.floor(out.length / normalized.length)))
+    const variants = variantsFrom(seed, variantCounter, currentId)
+    out.push(...variants)
+    currentId += 2 // Öka med 2 eftersom varje seed skapar 2 varianter
+    variantCounter++
     idx++
   }
   out = out.slice(0, 100)
-  out = out.map((r, i) => ({ ...r, id: String(i + 1) }))
+  
   return out
 }
 

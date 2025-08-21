@@ -2,18 +2,22 @@ import WeekPlanner from './components/WeekPlanner'
 import RecipeLibrary from './components/RecipeLibrary'
 import CommonIngredientsDisplay from './components/CommonIngredientsDisplay'
 import SmartRecommendations from './components/SmartRecommendations'
-import PrivacyPolicy from './components/PrivacyPolicy'
-import TermsOfUse from './components/TermsOfUse'
-import Contact from './components/Contact'
-import Feedback from './components/Feedback'
 import { RecipeProvider } from './context/RecipeContext'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import OnboardingTour from './components/OnboardingTour'
 import DebugPanel from './components/DebugPanel'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { secureStorage } from './utils/security'
 import { logInfo } from './utils/logger'
+import { commonClasses, responsiveText, textColors, spacing } from './utils/commonStyles'
+import { useRecipeFilters } from './hooks/useRecipeFilters'
+
+// Lazy load sidor som inte behövs direkt
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'))
+const TermsOfUse = lazy(() => import('./components/TermsOfUse'))
+const Contact = lazy(() => import('./components/Contact'))
+const Feedback = lazy(() => import('./components/Feedback'))
 
 // Main App Component
 const AppContent: React.FC = () => {
@@ -21,6 +25,14 @@ const AppContent: React.FC = () => {
   const [showDebugPanel, setShowDebugPanel] = useState(false)
   const [route, setRoute] = useState<string>(window.location.hash || '#/')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Delade filter för alla recept
+  const { 
+    activeFilters, 
+    toggleFilter, 
+    clearFilters, 
+    filterButtons, 
+  } = useRecipeFilters()
 
   useEffect(() => {
     // Kontrollera om användaren har sett onboarding tidigare
@@ -81,11 +93,11 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen bg-white text-text">
       {/* Modern Navigation Bar */}
       <nav className="sticky top-0 z-50 bg-white">
-        <div className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto py-3 sm:py-4">
+        <div className={`${commonClasses.container} py-3 sm:py-4`}>
           <div className="flex items-center justify-between">
             {/* Logo/Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <h1 className="text-lg sm:text-xl md:text-2xl text-text tracking-wide">
+              <h1 className={`${responsiveText.h3} ${textColors.primary} tracking-wide`}>
                 <a href="#/" aria-label="Gå till startsidan" className="flex items-baseline gap-0">
                   <span className="font-bold">MEAL</span>
                   <span className="font-light">WISE</span>
@@ -98,10 +110,10 @@ const AppContent: React.FC = () => {
             
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-6">
-              <a href="#/" className="text-text hover:text-text/80 transition-colors font-medium">
+              <a href="#/" className={commonClasses.button.link}>
                 Recept
               </a>
-              <a href="#/feedback" className="text-text hover:text-text/80 transition-colors font-medium">
+              <a href="#/feedback" className={commonClasses.button.link}>
                 Feedback
               </a>
             </div>
@@ -129,12 +141,12 @@ const AppContent: React.FC = () => {
           </div>
         </div>
         {/* Sträck under navigationen - följer med navigationen */}
-        <div className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto border-t border-text/30"></div>
+        <div className={`${commonClasses.container} border-t border-text/30`}></div>
 
         {/* Mobile menu dropdown */}
         {isMobileMenuOpen && (
           <div id="mobile-menu" className="md:hidden bg-white border-b border-text/10 shadow-sm">
-            <div className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto py-2">
+            <div className={`${commonClasses.container} py-2`}>
               <div className="flex flex-col gap-1 py-2">
                 <a
                   href="#/"
@@ -163,23 +175,23 @@ const AppContent: React.FC = () => {
           <section 
             id="hero-section"
             data-onboarding="hero-section"
-            className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto flex items-center justify-center min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] text-center px-4"
+            className={`${commonClasses.container} flex items-center justify-center min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] text-center px-4`}
           >
             <div className="flex flex-col items-center">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text mb-4 sm:mb-6 leading-tight">
-                <span className="text-text">Spara hundralappar</span>
+              <h1 className={`${responsiveText.h1} font-bold ${textColors.primary} mb-4 sm:mb-6 leading-tight`}>
+                <span className={textColors.primary}>Spara hundralappar</span>
                 <br />
                 <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   varje månad
                 </span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-text/70 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2">
+              <p className={`${responsiveText.body} ${textColors.muted} max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2`}>
                 Mealwise hjälper dig planera måltider och få inspiration. 
                 Skapa måltidsplaner baserat på ingredienser du har hemma.
               </p>
               <button 
                 onClick={startOnboarding}
-                className="bg-text text-background px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-text/90 transition-all duration-300 transform hover:scale-105"
+                className={commonClasses.button.primary}
               >
                 Kom igång med Mealwise
               </button>
@@ -187,9 +199,9 @@ const AppContent: React.FC = () => {
           </section>
           
           {/* Main Content */}
-          <main id="main-content" className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto p-3 sm:p-4 md:p-6 mt-8 sm:mt-12 md:mt-16">
+          <main id="main-content" className={`${commonClasses.container} ${spacing.content} ${spacing.section}`}>
             {/* Layout: Stack på små skärmar, grid på stora skärmar */}
-            <div className="flex flex-col xl:grid xl:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+            <div className={`flex flex-col xl:grid xl:grid-cols-2 ${spacing.gap}`}>
               {/* Vänster sida: Veckoplan */}
               <div data-onboarding="week-planner" className="order-1 xl:order-1">
                 <WeekPlanner />
@@ -198,10 +210,20 @@ const AppContent: React.FC = () => {
               {/* Höger sida: Alla recept + Smart rekommendationer + Alla ingredienser */}
               <div className="space-y-3 sm:space-y-4 order-2 xl:order-2">
                 <div data-onboarding="recipe-library">
-                  <RecipeLibrary />
+                  <RecipeLibrary 
+                    activeFilters={activeFilters}
+                    onToggleFilter={toggleFilter}
+                    onClearFilters={clearFilters}
+                    filterButtons={filterButtons}
+                  />
                 </div>
                 <div data-onboarding="smart-recommendations">
-                  <SmartRecommendations />
+                  <SmartRecommendations 
+                    activeFilters={activeFilters}
+                    onToggleFilter={toggleFilter}
+                    onClearFilters={clearFilters}
+                    filterButtons={filterButtons}
+                  />
                 </div>
                 <div data-onboarding="common-ingredients">
                   <CommonIngredientsDisplay />
@@ -211,13 +233,57 @@ const AppContent: React.FC = () => {
           </main>
         </>
       )}
-      {route === '#/privacy' && <PrivacyPolicy />}
-      {route === '#/terms' && <TermsOfUse />}
-      {route === '#/contact' && <Contact />}
-      {route === '#/feedback' && <Feedback />}
+      {route === '#/privacy' && (
+        <Suspense fallback={
+          <div className={commonClasses.loading.container}>
+            <div className="text-center">
+              <div className={commonClasses.loading.spinner}></div>
+              <p className={commonClasses.loading.text}>Laddar integritetspolicy...</p>
+            </div>
+          </div>
+        }>
+          <PrivacyPolicy />
+        </Suspense>
+      )}
+      {route === '#/terms' && (
+        <Suspense fallback={
+          <div className={commonClasses.loading.container}>
+            <div className="text-center">
+              <div className={commonClasses.loading.spinner}></div>
+              <p className={commonClasses.loading.text}>Laddar användarvillkor...</p>
+            </div>
+          </div>
+        }>
+          <TermsOfUse />
+        </Suspense>
+      )}
+      {route === '#/contact' && (
+        <Suspense fallback={
+          <div className={commonClasses.loading.container}>
+            <div className="text-center">
+              <div className={commonClasses.loading.spinner}></div>
+              <p className={commonClasses.loading.text}>Laddar kontaktformulär...</p>
+            </div>
+          </div>
+        }>
+          <Contact />
+        </Suspense>
+      )}
+      {route === '#/feedback' && (
+        <Suspense fallback={
+          <div className={commonClasses.loading.container}>
+            <div className="text-center">
+              <div className={commonClasses.loading.spinner}></div>
+              <p className={commonClasses.loading.text}>Laddar feedback-formulär...</p>
+            </div>
+          </div>
+        }>
+          <Feedback />
+        </Suspense>
+      )}
       
       {/* Footer */}
-      <footer className="w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto py-6 sm:py-8 mt-8 sm:mt-12 md:mt-16 border-t border-text/10">
+      <footer className={`${commonClasses.container} py-6 sm:py-8 ${spacing.section} border-t border-text/10`}>
         <div className="text-center">
           <p className="text-text/60 text-xs sm:text-sm">
             © 2024 Mealwise. Alla rättigheter förbehållna.

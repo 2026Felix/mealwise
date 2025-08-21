@@ -51,7 +51,7 @@ const Feedback: React.FC = () => {
             />
           </div>
           <div className="flex items-center gap-3">
-            <button type="submit" className="bg-text text-background px-4 py-2 rounded-md font-semibold hover:bg-text/70 transition-colors">
+            <button type="submit" className="bg-text text-background px-4 py-2 rounded-md font-medium hover:bg-text/70 transition-colors">
               Skicka feedback
             </button>
             {status === 'error' && <span className="text-red-400 text-sm">Meddelandet får inte vara tomt.</span>}

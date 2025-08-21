@@ -1,7 +1,21 @@
 import { createContext, useContext, useReducer, ReactNode, useCallback, useMemo } from 'react'
-import { Recipe, DayPlan, RecipeState, RecipeAction } from '../types'
+import { Recipe, DayPlan, RecipeState, RecipeAction, MealInstance } from '../types'
 import { DAYS_OF_WEEK } from '../constants'
 import { defaultRecipes } from '../constants/recipes'
+
+// Hjälpfunktion för att generera unika ID:n
+const generateInstanceId = (): string => {
+  return `meal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
+// Hjälpfunktion för att skapa en MealInstance från ett Recipe
+const createMealInstance = (recipe: Recipe): MealInstance => {
+  return {
+    instanceId: generateInstanceId(),
+    recipe,
+    addedAt: new Date()
+  }
+}
 
 const initialState: RecipeState = {
   weekPlan: DAYS_OF_WEEK.map(day => ({ day, recipes: [] })),
@@ -10,13 +24,13 @@ const initialState: RecipeState = {
 }
 
 // Förbättrade smarta rekommendationsfunktioner
-const getCommonIngredients = (recipes: Recipe[]): string[] => {
+const getCommonIngredients = (recipes: MealInstance[]): string[] => {
   if (recipes.length === 0) return []
   
   const ingredientCounts = new Map<string, number>()
   
-  recipes.forEach(recipe => {
-    recipe.ingredients.forEach(ingredient => {
+  recipes.forEach(mealInstance => {
+    mealInstance.recipe.ingredients.forEach(ingredient => {
       const key = ingredient.name.toLowerCase().trim()
       ingredientCounts.set(key, (ingredientCounts.get(key) || 0) + 1)
     })
@@ -28,13 +42,13 @@ const getCommonIngredients = (recipes: Recipe[]): string[] => {
     .map(([ingredient, _]) => ingredient)
 }
 
-const getIngredientsWithQuantities = (recipes: Recipe[]): Array<{name: string, totalQuantity: number, unit: string}> => {
+const getIngredientsWithQuantities = (recipes: MealInstance[]): Array<{name: string, totalQuantity: number, unit: string}> => {
   if (recipes.length === 0) return []
   
   const ingredientMap = new Map<string, {totalQuantity: number, unit: string}>()
   
-  recipes.forEach(recipe => {
-    recipe.ingredients.forEach(ingredient => {
+  recipes.forEach(mealInstance => {
+    mealInstance.recipe.ingredients.forEach(ingredient => {
       const key = ingredient.name.toLowerCase().trim()
       const existing = ingredientMap.get(key)
       
@@ -59,13 +73,13 @@ const getIngredientsWithQuantities = (recipes: Recipe[]): Array<{name: string, t
 }
 
 const generateSmartSuggestions = (weekPlan: DayPlan[], recipeLibrary: Recipe[]): Recipe[] => {
-  const plannedRecipes = weekPlan.flatMap(day => day.recipes)
+  const plannedRecipes = weekPlan.flatMap(day => day.recipes.map(mi => mi.recipe))
   
   if (plannedRecipes.length === 0) {
     return []
   }
   
-  const commonIngredients = getCommonIngredients(plannedRecipes)
+  const commonIngredients = getCommonIngredients(weekPlan.flatMap(day => day.recipes))
   
   // Skapa en uppsättning av alla planerade receptnamn (utan varianter)
   const plannedRecipeBaseNames = new Set(
@@ -123,7 +137,7 @@ const recipeReducer = (state: RecipeState, action: RecipeAction): RecipeState =>
         ...state,
         weekPlan: state.weekPlan.map(day =>
           day.day === action.day
-            ? { ...day, recipes: [...day.recipes, action.recipe] }
+            ? { ...day, recipes: [...day.recipes, createMealInstance(action.recipe)] }
             : day
         )
       }
@@ -137,7 +151,7 @@ const recipeReducer = (state: RecipeState, action: RecipeAction): RecipeState =>
         ...state,
         weekPlan: state.weekPlan.map(day =>
           day.day === action.day
-            ? { ...day, recipes: day.recipes.filter(r => r.id !== action.recipeId) }
+            ? { ...day, recipes: day.recipes.filter(mi => mi.instanceId !== action.instanceId) }
             : day
         )
       }
@@ -151,27 +165,27 @@ const recipeReducer = (state: RecipeState, action: RecipeAction): RecipeState =>
         ...state,
         weekPlan: state.weekPlan.map(day => {
           if (day.day === action.fromDay) {
-            return { ...day, recipes: day.recipes.filter(r => r.id !== action.recipe.id) }
+            return { ...day, recipes: day.recipes.filter(mi => mi.instanceId !== action.mealInstance.instanceId) }
           } else if (day.day === action.toDay) {
-            return { ...day, recipes: [...day.recipes, action.recipe] }
+            return { ...day, recipes: [...day.recipes, action.mealInstance] }
           }
           return day
         })
       }
-      return {
-        ...stateAfterMove,
-        suggestions: generateSmartSuggestions(stateAfterMove.weekPlan, stateAfterMove.recipeLibrary)
-      }
+              return {
+          ...stateAfterMove,
+          suggestions: generateSmartSuggestions(stateAfterMove.weekPlan, stateAfterMove.recipeLibrary)
+        }
     
     case 'SET_SUGGESTIONS':
       return { ...state, suggestions: action.suggestions }
     
     case 'LOAD_RECIPES':
       const stateWithRecipes = { ...state, recipeLibrary: action.recipes }
-      return {
-        ...stateWithRecipes,
-        suggestions: generateSmartSuggestions(stateWithRecipes.weekPlan, stateWithRecipes.recipeLibrary)
-      }
+              return {
+          ...stateWithRecipes,
+          suggestions: generateSmartSuggestions(stateWithRecipes.weekPlan, stateWithRecipes.recipeLibrary)
+        }
     
     case 'GENERATE_SUGGESTIONS':
       return {

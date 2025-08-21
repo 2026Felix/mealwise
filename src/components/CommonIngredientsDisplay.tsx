@@ -43,7 +43,7 @@ const CommonIngredientsDisplay: React.FC = () => {
         
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1.5 sm:p-2 hover:bg-background rounded-lg transition-all duration-200 group"
+          				className="p-1.5 sm:p-2 hover:bg-background rounded-lg transition-colors duration-200 group"
           title={isCollapsed ? "Expandera" : "Vik ihop"}
         >
           {isCollapsed ? (

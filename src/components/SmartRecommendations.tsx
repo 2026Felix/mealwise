@@ -2,8 +2,18 @@ import { useRecipeContext } from '../context/RecipeContext'
 import RecipeCard from './RecipeCard'
 import { useState, useMemo } from 'react'
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react'
+import { FilterType } from '../hooks/useRecipeFilters'
 
-const SmartRecommendations: React.FC = () => {
+interface SmartRecommendationsProps {
+  activeFilters: Set<FilterType>
+  onToggleFilter: (filter: FilterType) => void
+  onClearFilters: () => void
+  filterButtons: Array<{ key: FilterType; label: string; description: string }>
+}
+
+const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
+  activeFilters,
+}) => {
 	const { state, dispatch } = useRecipeContext()
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
@@ -14,7 +24,7 @@ const SmartRecommendations: React.FC = () => {
 
 	// Beräkna gemensamma ingredienser för varje förslag och sortera
 	const suggestionsWithOverlap = useMemo(() => {
-		const plannedRecipes = state.weekPlan.flatMap(day => day.recipes)
+		const plannedRecipes = state.weekPlan.flatMap(day => day.recipes.map(mi => mi.recipe))
 		
 		const suggestionsWithCount = suggestions.map(recipe => {
 			let commonIngredientsCount = 0
@@ -49,6 +59,29 @@ const SmartRecommendations: React.FC = () => {
 		return suggestionsWithCount.sort((a, b) => b.commonIngredientsCount - a.commonIngredientsCount)
 	}, [suggestions, state.weekPlan])
 
+	// Filtrera rekommendationer baserat på aktiva filter
+	const filteredSuggestions = useMemo(() => {
+		if (activeFilters.size === 0) return suggestionsWithOverlap
+
+		return suggestionsWithOverlap.filter(({ recipe }) => {
+			// BILLIG - recept med färre ingredienser eller kortare tillagningstid
+			if (activeFilters.has('billig') && !(
+				recipe.ingredients.length <= 4 || recipe.prepTime <= 30
+			)) return false
+
+			// ENKEL - recept med låg svårighetsgrad
+			if (activeFilters.has('enkel') && recipe.difficulty !== 'easy') return false
+
+			// SNABB - recept med kort tillagningstid
+			if (activeFilters.has('snabb') && recipe.prepTime > 30) return false
+
+			// VEGETARISK - recept utan kött/fisk
+			if (activeFilters.has('vegetarisk') && recipe.category === 'protein') return false
+
+			return true
+		})
+	}, [suggestionsWithOverlap, activeFilters])
+
 	return (
 		<div className="bg-component rounded-xl p-3 sm:p-4 md:p-6 border border-gray-200">
 			{/* Header med titel och collapse-knapp */}
@@ -69,7 +102,7 @@ const SmartRecommendations: React.FC = () => {
 				
 				<button
 					onClick={() => setIsCollapsed(!isCollapsed)}
-					className="p-1.5 sm:p-2 hover:bg-background rounded-lg transition-all duration-200 group"
+					className="p-1.5 sm:p-2 hover:bg-background rounded-lg transition-colors duration-200 group"
 					title={isCollapsed ? "Expandera" : "Vik ihop"}
 				>
 					{isCollapsed ? (
@@ -82,16 +115,19 @@ const SmartRecommendations: React.FC = () => {
 			
 			{!isCollapsed && (
 				<>
-					{suggestions.length === 0 ? (
+					{filteredSuggestions.length === 0 ? (
 						<div className="text-center py-6 sm:py-8">
 							<Brain className="w-12 h-12 sm:w-16 sm:h-16 text-text/20 mx-auto mb-3 sm:mb-4" />
 							<p className="text-text/60 text-xs sm:text-sm px-2">
-								Lägg till recept i din veckoplan för att få smarta förslag baserat på gemensamma ingredienser.
+								{activeFilters.size > 0 
+									? 'Inga rekommendationer matchar de valda filtren. Prova att ändra filter eller lägg till fler recept i din veckoplan.'
+									: 'Lägg till recept i din veckoplan för att få smarta förslag baserat på gemensamma ingredienser.'
+								}
 							</p>
 						</div>
 					) : (
 						<div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto pr-1 sm:pr-2">
-							{suggestionsWithOverlap.map(({ recipe, commonIngredientsCount, commonIngredientNames }) => (
+							{filteredSuggestions.map(({ recipe, commonIngredientsCount, commonIngredientNames }) => (
 								<RecipeCard 
 									key={recipe.id} 
 									recipe={recipe}
