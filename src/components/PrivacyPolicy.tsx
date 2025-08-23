@@ -32,7 +32,7 @@ const PrivacyPolicy: React.FC = () => {
           </p>
                      <p className="text-text/80">Exempel på information som behandlas:</p>
            <ul className="list-disc pl-5 text-text/80 space-y-1">
-             <li>Sidvisningar och rutt (t.ex. <code className="text-xs">#/</code>, <code className="text-xs">#/feedback</code>)</li>
+             <li>Sidvisningar och rutt (t.ex. <code className="text-xs">/</code>, <code className="text-xs">/feedback</code>)</li>
              <li>Hänvisningskälla (referrer)</li>
              <li>Typ av enhet, webbläsare och operativsystem</li>
              <li>Språk och ungefärlig plats på landsnivå</li>

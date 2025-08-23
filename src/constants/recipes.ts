@@ -6,411 +6,307 @@ type Category = 'vegetables' | 'carbs' | 'protein' | 'dairy'
 function make(
   id: number,
   name: string,
+  description: string,
   ingredients: Array<{ name: string; quantity: number; unit: string }>,
+  instructions: string[],
   prepTime: number,
+  cookTime: number,
   category: Category,
-  difficulty: Difficulty = 'easy'
+  difficulty: Difficulty = 'easy',
+  nutrition?: {
+    calories: number
+    protein: number
+    carbs: number
+    fat: number
+    fiber?: number
+    sugar?: number
+    sodium?: number
+  },
+  tags?: string[]
 ): Recipe {
-  return { id: String(id), name, ingredients, prepTime, category, difficulty }
+  return { 
+    id: String(id), 
+    name, 
+    description,
+    ingredients, 
+    instructions,
+    prepTime, 
+    cookTime,
+    totalTime: prepTime + cookTime,
+    servings: 4,
+    category, 
+    difficulty,
+    nutrition,
+    tags
+  }
 }
 
 const baseRecipes: Recipe[] = [
-  make(1, 'Köttbullar med potatismos', [
-    { name: 'Nötfärs', quantity: 400, unit: 'g' },
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Grädde', quantity: 100, unit: 'ml' }
-  ], 40, 'protein', 'medium'),
+  make(1, 'Köttbullar med potatismos', 
+    'Klassiska svenska köttbullar med krämigt potatismos och lingonsylt',
+    [
+      { name: 'Nötfärs', quantity: 400, unit: 'g' },
+      { name: 'Potatis', quantity: 600, unit: 'g' },
+      { name: 'Lök', quantity: 1, unit: 'st' },
+      { name: 'Grädde', quantity: 100, unit: 'ml' }
+    ],
+    [
+      'Blanda nötfärs med finhackad lök, salt och peppar',
+      'Forma till små bollar och stek dem i smör tills de är gyllenbruna',
+      'Koka potatis tills den är mjuk, mos med grädde och smör',
+      'Servera köttbullarna med potatismos och lingonsylt'
+    ],
+    20, 20, 'protein', 'medium',
+    {
+      calories: 450,
+      protein: 35,
+      carbs: 25,
+      fat: 22,
+      fiber: 3,
+      sodium: 800
+    },
+    ['klassisk', 'svensk', 'kött', 'potatis']
+  ),
 
-  make(2, 'Korv Stroganoff', [
-    { name: 'Falukorv', quantity: 400, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Grädde', quantity: 100, unit: 'ml' }
-  ], 30, 'protein', 'easy'),
+  make(2, 'Korv Stroganoff', 
+    'Krämig korvgryta med svamp och gräddesås, serverad med ris',
+    [
+      { name: 'Falukorv', quantity: 400, unit: 'g' },
+      { name: 'Krossade tomater', quantity: 400, unit: 'g' },
+      { name: 'Lök', quantity: 1, unit: 'st' },
+      { name: 'Grädde', quantity: 100, unit: 'ml' }
+    ],
+    [
+      'Skär korven i skivor och stek dem gyllenbruna',
+      'Hetta upp olja och stek finhackad lök tills den är mjuk',
+      'Lägg till korv, tomater och grädde',
+      'Låt koka ihop i 10-15 minuter och servera med ris'
+    ],
+    15, 15, 'protein', 'easy',
+    {
+      calories: 380,
+      protein: 18,
+      carbs: 15,
+      fat: 28,
+      fiber: 2,
+      sodium: 1200
+    },
+    ['korv', 'gryta', 'krämig', 'snabb']
+  ),
 
-  make(3, 'Kalops', [
-    { name: 'Högrev', quantity: 600, unit: 'g' },
-    { name: 'Lök', quantity: 2, unit: 'st' },
-    { name: 'Morot', quantity: 2, unit: 'st' },
-    { name: 'Buljong', quantity: 600, unit: 'ml' }
-  ], 90, 'protein', 'medium'),
+  make(3, 'Kalops', 
+    'Långkokt högrev med lök och morötter i buljong, serverad med potatis',
+    [
+      { name: 'Högrev', quantity: 600, unit: 'g' },
+      { name: 'Lök', quantity: 2, unit: 'st' },
+      { name: 'Morot', quantity: 2, unit: 'st' },
+      { name: 'Buljong', quantity: 600, unit: 'ml' }
+    ],
+    [
+      'Skär köttet i bitar och bruna av i olja',
+      'Lägg till hackad lök och morötter',
+      'Häll på buljong och låt koka sakta i 1-1,5 timme',
+      'Servera med kokt potatis och lingonsylt'
+    ],
+    20, 70, 'protein', 'medium',
+    {
+      calories: 420,
+      protein: 45,
+      carbs: 18,
+      fat: 18,
+      fiber: 4,
+      sodium: 900
+    },
+    ['långkok', 'kött', 'buljong', 'traditionell']
+  ),
 
-  make(4, 'Dillkött', [
-    { name: 'Kalvkött', quantity: 600, unit: 'g' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Dill', quantity: 1, unit: 'kruka' },
-    { name: 'Buljong', quantity: 600, unit: 'ml' }
-  ], 80, 'protein', 'medium'),
+  make(4, 'Dillkött', 
+    'Mörbakat kalvkött i dillsås med grädde, serverad med potatis',
+    [
+      { name: 'Kalvkött', quantity: 600, unit: 'g' },
+      { name: 'Grädde', quantity: 200, unit: 'ml' },
+      { name: 'Dill', quantity: 1, unit: 'kruka' },
+      { name: 'Buljong', quantity: 600, unit: 'ml' }
+    ],
+    [
+      'Skär köttet i bitar och bruna av i smör',
+      'Lägg till buljong och låt koka sakta i 45 minuter',
+      'Tillsätt grädde och finhackad dill',
+      'Låt koka ihop i 5 minuter och servera med potatis'
+    ],
+    15, 65, 'protein', 'medium',
+    {
+      calories: 380,
+      protein: 42,
+      carbs: 12,
+      fat: 18,
+      fiber: 1,
+      sodium: 850
+    },
+    ['kalv', 'dill', 'krämig', 'klassisk']
+  ),
 
-  make(5, 'Ugnspannkaka', [
-    { name: 'Mjölk', quantity: 600, unit: 'ml' },
-    { name: 'Mjöl', quantity: 250, unit: 'g' },
-    { name: 'Ägg', quantity: 3, unit: 'st' },
-    { name: 'Bacon', quantity: 150, unit: 'g' }
-  ], 40, 'protein', 'easy'),
+  make(5, 'Ugnspannkaka', 
+    'Luftig pannkaka med bacon i ugn, serverad med lingonsylt',
+    [
+      { name: 'Mjölk', quantity: 600, unit: 'ml' },
+      { name: 'Mjöl', quantity: 250, unit: 'g' },
+      { name: 'Ägg', quantity: 3, unit: 'st' },
+      { name: 'Bacon', quantity: 150, unit: 'g' }
+    ],
+    [
+      'Vispa ihop mjölk, mjöl och ägg till en smidig smet',
+      'Lägg bacon i botten av en ugnsform',
+      'Häll på smeten och grädda i 200°C i 25-30 minuter',
+      'Servera varm med lingonsylt'
+    ],
+    10, 30, 'protein', 'easy',
+    {
+      calories: 320,
+      protein: 16,
+      carbs: 28,
+      fat: 18,
+      fiber: 1,
+      sodium: 600
+    },
+    ['pannkaka', 'ugn', 'bacon', 'snabb']
+  ),
 
-  make(6, 'Janssons frestelse', [
-    { name: 'Potatis', quantity: 700, unit: 'g' },
-    { name: 'Ansjovis', quantity: 120, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Grädde', quantity: 300, unit: 'ml' }
-  ], 60, 'protein', 'medium'),
+  make(6, 'Janssons frestelse', 
+    'Potatisgratäng med ansjovis, lök och grädde, gräddad i ugn',
+    [
+      { name: 'Potatis', quantity: 700, unit: 'g' },
+      { name: 'Ansjovis', quantity: 120, unit: 'g' },
+      { name: 'Lök', quantity: 1, unit: 'st' },
+      { name: 'Grädde', quantity: 300, unit: 'ml' }
+    ],
+    [
+      'Skala och skiva potatis tunt',
+      'Lägg halva potatisen i botten av en ugnsform',
+      'Lägg på ansjovis och hackad lök',
+      'Lägg på resten av potatisen och häll på grädde',
+      'Grädda i 200°C i 45-50 minuter'
+    ],
+    20, 40, 'protein', 'medium',
+    {
+      calories: 410,
+      protein: 22,
+      carbs: 35,
+      fat: 24,
+      fiber: 4,
+      sodium: 1100
+    },
+    ['gratäng', 'potatis', 'ansjovis', 'traditionsrätt']
+  ),
 
-  make(7, 'Raggmunk med fläsk', [
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Mjölk', quantity: 300, unit: 'ml' },
-    { name: 'Mjöl', quantity: 120, unit: 'g' },
-    { name: 'Rökt sidfläsk', quantity: 200, unit: 'g' }
-  ], 45, 'protein', 'medium'),
+  make(7, 'Raggmunk med fläsk', 
+    'Potatisplättar med rökt sidfläsk, serverade med lingonsylt',
+    [
+      { name: 'Potatis', quantity: 600, unit: 'g' },
+      { name: 'Mjölk', quantity: 300, unit: 'ml' },
+      { name: 'Mjöl', quantity: 120, unit: 'g' },
+      { name: 'Rökt sidfläsk', quantity: 200, unit: 'g' }
+    ],
+    [
+      'Riv potatis fint och blanda med mjölk och mjöl',
+      'Stek sidfläsket krispigt och ta upp',
+      'Stek potatissmeten i fläskfettet till plättar',
+      'Servera varma med lingonsylt och fläsket'
+    ],
+    15, 30, 'protein', 'medium',
+    {
+      calories: 380,
+      protein: 16,
+      carbs: 32,
+      fat: 22,
+      fiber: 3,
+      sodium: 800
+    },
+    ['potatis', 'plättar', 'fläsk', 'klassisk']
+  ),
 
-  make(8, 'Stekt strömming med mos', [
-    { name: 'Strömmingsfilé', quantity: 400, unit: 'g' },
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Smör', quantity: 50, unit: 'g' },
-    { name: 'Lingon', quantity: 100, unit: 'g' }
-  ], 35, 'protein', 'medium'),
+  make(8, 'Stekt strömming med mos', 
+    'Färsk strömming stekt i smör med potatismos och lingon',
+    [
+      { name: 'Strömmingsfilé', quantity: 400, unit: 'g' },
+      { name: 'Potatis', quantity: 600, unit: 'g' },
+      { name: 'Smör', quantity: 50, unit: 'g' },
+      { name: 'Lingon', quantity: 100, unit: 'g' }
+    ],
+    [
+      'Koka potatis tills den är mjuk och mos med smör',
+      'Krydda strömmingen med salt och peppar',
+      'Stek filéerna i smör tills de är gyllenbruna',
+      'Servera med potatismos och lingonsylt'
+    ],
+    15, 20, 'protein', 'medium',
+    {
+      calories: 350,
+      protein: 38,
+      carbs: 28,
+      fat: 16,
+      fiber: 3,
+      sodium: 700
+    },
+    ['strömming', 'fisk', 'potatis', 'klassisk']
+  ),
 
-  make(9, 'Pytt i panna', [
-    { name: 'Potatis', quantity: 500, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Nötfärs', quantity: 300, unit: 'g' },
-    { name: 'Ägg', quantity: 2, unit: 'st' }
-  ], 30, 'protein', 'easy'),
+  make(9, 'Pytt i panna', 
+    'Stekt potatis med lök, kött och ägg, en klassisk svensk rätt',
+    [
+      { name: 'Potatis', quantity: 500, unit: 'g' },
+      { name: 'Lök', quantity: 1, unit: 'st' },
+      { name: 'Nötfärs', quantity: 300, unit: 'g' },
+      { name: 'Ägg', quantity: 2, unit: 'st' }
+    ],
+    [
+      'Koka potatis tills den är nästan mjuk, kyl och skär i tärningar',
+      'Stek nötfärs tills den är genomstekt',
+      'Lägg till potatis och hackad lök, stek tills allt är gyllenbrunt',
+      'Stek ägg och servera ovanpå'
+    ],
+    15, 15, 'protein', 'easy',
+    {
+      calories: 420,
+      protein: 28,
+      carbs: 32,
+      fat: 24,
+      fiber: 3,
+      sodium: 750
+    },
+    ['pytt', 'potatis', 'kött', 'klassisk']
+  ),
 
-  make(10, 'Ärtsoppa', [
-    { name: 'Gula ärtor', quantity: 300, unit: 'g' },
-    { name: 'Fläsk', quantity: 200, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Vatten', quantity: 1000, unit: 'ml' }
-  ], 90, 'protein', 'medium'),
-
-  make(11, 'Wallenbergare', [
-    { name: 'Kalvfärs', quantity: 400, unit: 'g' },
-    { name: 'Grädde', quantity: 150, unit: 'ml' },
-    { name: 'Äggula', quantity: 2, unit: 'st' },
-    { name: 'Potatis', quantity: 500, unit: 'g' }
-  ], 45, 'protein', 'medium'),
-
-  make(12, 'Biff à la Lindström', [
-    { name: 'Nötfärs', quantity: 500, unit: 'g' },
-    { name: 'Rödbetor', quantity: 150, unit: 'g' },
-    { name: 'Kapris', quantity: 2, unit: 'msk' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 40, 'protein', 'medium'),
-
-  make(13, 'Kåldolmar', [
-    { name: 'Vitkål', quantity: 1, unit: 'st' },
-    { name: 'Blandfärs', quantity: 500, unit: 'g' },
-    { name: 'Ris', quantity: 100, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 80, 'protein', 'hard'),
-
-  make(14, 'Kålpudding', [
-    { name: 'Vitkål', quantity: 700, unit: 'g' },
-    { name: 'Blandfärs', quantity: 500, unit: 'g' },
-    { name: 'Sirap', quantity: 2, unit: 'msk' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 70, 'protein', 'medium'),
-
-  make(15, 'Falukorv i ugn', [
-    { name: 'Falukorv', quantity: 500, unit: 'g' },
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Ost', quantity: 100, unit: 'g' }
-  ], 40, 'protein', 'easy'),
-
-  make(16, 'Fiskpinnar med potatis', [
-    { name: 'Fiskpinnar', quantity: 12, unit: 'st' },
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Citron', quantity: 1, unit: 'st' },
-    { name: 'Ärter', quantity: 200, unit: 'g' }
-  ], 25, 'protein', 'easy'),
-
-  make(17, 'Fiskgratäng', [
-    { name: 'Torskfilé', quantity: 400, unit: 'g' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Dill', quantity: 1, unit: 'kruka' },
-    { name: 'Potatis', quantity: 500, unit: 'g' }
-  ], 45, 'protein', 'medium'),
-
-  make(18, 'Torsk i ugn med citron', [
-    { name: 'Torskfilé', quantity: 400, unit: 'g' },
-    { name: 'Citron', quantity: 1, unit: 'st' },
-    { name: 'Smör', quantity: 40, unit: 'g' },
-    { name: 'Potatis', quantity: 500, unit: 'g' }
-  ], 35, 'protein', 'easy'),
-
-  make(19, 'Laxpasta', [
-    { name: 'Pasta', quantity: 250, unit: 'g' },
-    { name: 'Lax', quantity: 200, unit: 'g' },
-    { name: 'Grädde', quantity: 150, unit: 'ml' },
-    { name: 'Dill', quantity: 1, unit: 'kruka' }
-  ], 25, 'protein', 'easy'),
-
-  make(20, 'Kyckling i ugn med rotfrukter', [
-    { name: 'Kycklinglår', quantity: 600, unit: 'g' },
-    { name: 'Morot', quantity: 3, unit: 'st' },
-    { name: 'Palsternacka', quantity: 2, unit: 'st' },
-    { name: 'Potatis', quantity: 500, unit: 'g' }
-  ], 60, 'protein', 'medium'),
-
-  make(21, 'Kycklinggryta med curry', [
-    { name: 'Kycklingfilé', quantity: 400, unit: 'g' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Currypulver', quantity: 2, unit: 'tsk' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 30, 'protein', 'easy'),
-
-  make(22, 'Köttfärssås och spaghetti', [
-    { name: 'Nötfärs', quantity: 400, unit: 'g' },
-    { name: 'Spaghetti', quantity: 250, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 35, 'protein', 'easy'),
-
-  make(23, 'Lasagne klassisk', [
-    { name: 'Lasagneplattor', quantity: 250, unit: 'g' },
-    { name: 'Nötfärs', quantity: 400, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Ost', quantity: 150, unit: 'g' }
-  ], 50, 'protein', 'medium'),
-
-  make(24, 'Tacopaj', [
-    { name: 'Pajdeg', quantity: 1, unit: 'st' },
-    { name: 'Nötfärs', quantity: 400, unit: 'g' },
-    { name: 'Taco-krydda', quantity: 1, unit: 'påse' },
-    { name: 'Ost', quantity: 150, unit: 'g' }
-  ], 45, 'protein', 'easy'),
-
-  make(25, 'Färsbiffar med lök', [
-    { name: 'Blandfärs', quantity: 500, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Ägg', quantity: 1, unit: 'st' },
-    { name: 'Potatis', quantity: 500, unit: 'g' }
-  ], 35, 'protein', 'easy'),
-
-  make(26, 'Stekt falukorv med stuvade makaroner', [
-    { name: 'Falukorv', quantity: 400, unit: 'g' },
-    { name: 'Makaroner', quantity: 300, unit: 'g' },
-    { name: 'Mjölk', quantity: 400, unit: 'ml' },
-    { name: 'Smör', quantity: 30, unit: 'g' }
-  ], 30, 'protein', 'easy'),
-
-  make(27, 'Blodpudding med lingon', [
-    { name: 'Blodpudding', quantity: 400, unit: 'g' },
-    { name: 'Lingonsylt', quantity: 100, unit: 'g' },
-    { name: 'Smör', quantity: 20, unit: 'g' },
-    { name: 'Äpple', quantity: 1, unit: 'st' }
-  ], 15, 'protein', 'easy'),
-
-  make(28, 'Gulasch', [
-    { name: 'Högrev', quantity: 600, unit: 'g' },
-    { name: 'Potatis', quantity: 400, unit: 'g' },
-    { name: 'Paprika', quantity: 2, unit: 'st' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 70, 'protein', 'medium'),
-
-  make(29, 'Chili con carne', [
-    { name: 'Nötfärs', quantity: 500, unit: 'g' },
-    { name: 'Kidneybönor', quantity: 400, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 45, 'protein', 'easy'),
-
-  make(30, 'Linsgryta', [
-    { name: 'Röda linser', quantity: 300, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Spiskummin', quantity: 1, unit: 'tsk' }
-  ], 30, 'vegetables', 'easy'),
-
-  // Nya vegetariska recept
-  make(31, 'Vegetarisk lasagne', [
-    { name: 'Lasagneplattor', quantity: 250, unit: 'g' },
-    { name: 'Quornfärs', quantity: 400, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Ost', quantity: 150, unit: 'g' }
-  ], 50, 'vegetables', 'medium'),
-
-  make(32, 'Vegetarisk tacopaj', [
-    { name: 'Pajdeg', quantity: 1, unit: 'st' },
-    { name: 'Quornfärs', quantity: 400, unit: 'g' },
-    { name: 'Taco-krydda', quantity: 1, unit: 'påse' },
-    { name: 'Ost', quantity: 150, unit: 'g' }
-  ], 45, 'vegetables', 'easy'),
-
-  make(33, 'Vegetarisk pytt i panna', [
-    { name: 'Potatis', quantity: 500, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Quornfärs', quantity: 300, unit: 'g' },
-    { name: 'Ägg', quantity: 2, unit: 'st' }
-  ], 30, 'vegetables', 'easy'),
-
-  make(34, 'Vegetarisk ärtsoppa', [
-    { name: 'Gula ärtor', quantity: 300, unit: 'g' },
-    { name: 'Morot', quantity: 200, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Vatten', quantity: 1000, unit: 'ml' }
-  ], 90, 'vegetables', 'medium'),
-
-  make(35, 'Vegetarisk kåldolmar', [
-    { name: 'Vitkål', quantity: 1, unit: 'st' },
-    { name: 'Quornfärs', quantity: 500, unit: 'g' },
-    { name: 'Ris', quantity: 100, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 80, 'vegetables', 'hard'),
-
-  make(36, 'Vegetarisk kålpudding', [
-    { name: 'Vitkål', quantity: 700, unit: 'g' },
-    { name: 'Quornfärs', quantity: 500, unit: 'g' },
-    { name: 'Sirap', quantity: 2, unit: 'msk' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 70, 'vegetables', 'medium'),
-
-  make(37, 'Vegetarisk falukorv i ugn', [
-    { name: 'Vegetarisk korv', quantity: 500, unit: 'g' },
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Ost', quantity: 100, unit: 'g' }
-  ], 40, 'vegetables', 'easy'),
-
-  make(38, 'Vegetarisk fiskgratäng', [
-    { name: 'Vegetarisk fisk', quantity: 400, unit: 'g' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Dill', quantity: 1, unit: 'kruka' },
-    { name: 'Potatis', quantity: 500, unit: 'g' }
-  ], 45, 'vegetables', 'medium'),
-
-  make(39, 'Vegetarisk laxpasta', [
-    { name: 'Pasta', quantity: 250, unit: 'g' },
-    { name: 'Vegetarisk lax', quantity: 200, unit: 'g' },
-    { name: 'Grädde', quantity: 150, unit: 'ml' },
-    { name: 'Dill', quantity: 1, unit: 'kruka' }
-  ], 25, 'vegetables', 'easy'),
-
-  make(40, 'Vegetarisk kycklinggryta', [
-    { name: 'Vegetarisk kyckling', quantity: 400, unit: 'g' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Currypulver', quantity: 2, unit: 'tsk' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 30, 'vegetables', 'easy'),
-
-  // Nya snabba recept
-  make(41, 'Snabb vegetarisk pasta', [
-    { name: 'Pasta', quantity: 250, unit: 'g' },
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Ost', quantity: 100, unit: 'g' },
-    { name: 'Basilika', quantity: 1, unit: 'kruka' }
-  ], 15, 'vegetables', 'easy'),
-
-  make(42, 'Snabb vegetarisk soppa', [
-    { name: 'Grönsaksbuljong', quantity: 1000, unit: 'ml' },
-    { name: 'Morot', quantity: 200, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Pasta', quantity: 100, unit: 'g' }
-  ], 20, 'vegetables', 'easy'),
-
-  make(43, 'Snabb vegetarisk omelett', [
-    { name: 'Ägg', quantity: 4, unit: 'st' },
-    { name: 'Ost', quantity: 100, unit: 'g' },
-    { name: 'Tomat', quantity: 1, unit: 'st' },
-    { name: 'Basilika', quantity: 1, unit: 'kruka' }
-  ], 15, 'vegetables', 'easy'),
-
-  make(44, 'Snabb vegetarisk risotto', [
-    { name: 'Ris', quantity: 200, unit: 'g' },
-    { name: 'Grönsaksbuljong', quantity: 600, unit: 'ml' },
-    { name: 'Ost', quantity: 100, unit: 'g' },
-    { name: 'Svamp', quantity: 200, unit: 'g' }
-  ], 25, 'vegetables', 'easy'),
-
-  make(45, 'Snabb vegetarisk pizza', [
-    { name: 'Pizzadeg', quantity: 1, unit: 'st' },
-    { name: 'Krossade tomater', quantity: 200, unit: 'g' },
-    { name: 'Ost', quantity: 150, unit: 'g' },
-    { name: 'Champinjoner', quantity: 200, unit: 'g' }
-  ], 20, 'vegetables', 'easy'),
-
-  // Nya enkla recept
-  make(46, 'Enkel vegetarisk sallad', [
-    { name: 'Salladsblad', quantity: 200, unit: 'g' },
-    { name: 'Tomat', quantity: 2, unit: 'st' },
-    { name: 'Gurka', quantity: 1, unit: 'st' },
-    { name: 'Olivolja', quantity: 30, unit: 'ml' }
-  ], 10, 'vegetables', 'easy'),
-
-  make(47, 'Enkel vegetarisk soppa', [
-    { name: 'Grönsaksbuljong', quantity: 1000, unit: 'ml' },
-    { name: 'Morot', quantity: 300, unit: 'g' },
-    { name: 'Lök', quantity: 2, unit: 'st' },
-    { name: 'Potatis', quantity: 400, unit: 'g' }
-  ], 30, 'vegetables', 'easy'),
-
-  make(48, 'Enkel vegetarisk gratäng', [
-    { name: 'Potatis', quantity: 600, unit: 'g' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Ost', quantity: 150, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' }
-  ], 45, 'vegetables', 'easy'),
-
-  make(49, 'Enkel vegetarisk paj', [
-    { name: 'Pajdeg', quantity: 1, unit: 'st' },
-    { name: 'Ägg', quantity: 3, unit: 'st' },
-    { name: 'Grädde', quantity: 200, unit: 'ml' },
-    { name: 'Ost', quantity: 100, unit: 'g' }
-  ], 40, 'vegetables', 'easy'),
-
-  make(50, 'Enkel vegetarisk gryta', [
-    { name: 'Krossade tomater', quantity: 400, unit: 'g' },
-    { name: 'Linser', quantity: 200, unit: 'g' },
-    { name: 'Lök', quantity: 1, unit: 'st' },
-    { name: 'Morot', quantity: 200, unit: 'g' }
-  ], 35, 'vegetables', 'easy')
+  make(10, 'Ärtsoppa', 
+    'Traditionsrätt med gula ärtor, fläsk och kryddor, serverad med pannkakor',
+    [
+      { name: 'Gula ärtor', quantity: 300, unit: 'g' },
+      { name: 'Fläsk', quantity: 200, unit: 'g' },
+      { name: 'Lök', quantity: 1, unit: 'st' },
+      { name: 'Vatten', quantity: 1000, unit: 'ml' }
+    ],
+    [
+      'Låt ärtorna ligga i vatten över natten',
+      'Koka ärtorna med fläsk och lök i 1-1,5 timme',
+      'Krydda med timjan och peppar',
+      'Servera med pannkakor och lingonsylt'
+    ],
+    15, 75, 'protein', 'medium',
+    {
+      calories: 380,
+      protein: 26,
+      carbs: 42,
+      fat: 18,
+      fiber: 18,
+      sodium: 600
+    },
+    ['ärtor', 'soppa', 'traditionsrätt', 'torsdag']
+  )
 ]
 
-function variantsFrom(recipe: Recipe, _index: number, currentId: number): Recipe[] {
-  const v1: Recipe = {
-    ...recipe,
-    id: String(currentId),
-    name: `${recipe.name} – snabb variant`,
-    prepTime: Math.max(15, Math.round(recipe.prepTime * 0.75)),
-    ingredients: recipe.ingredients.map(i =>
-      i.name === 'Potatis' ? { ...i, quantity: Math.round(i.quantity * 0.8) } : i
-    )
-  }
-  const v2: Recipe = {
-    ...recipe,
-    id: String(currentId + 1),
-    name: `${recipe.name} – festlig variant`,
-    prepTime: Math.round(recipe.prepTime * 1.2),
-    ingredients: [
-      ...recipe.ingredients,
-      { name: 'Persilja', quantity: 1, unit: 'kruka' }
-    ]
-  }
-  return [v1, v2]
-}
-
 export function expandToHundred(base: Recipe[]): Recipe[] {
-  const normalized = base.map((r, i) => ({ ...r, id: String(i + 1) }))
-  let out = [...normalized]
-
-  let idx = 0
-  let variantCounter = 0
-  let currentId = normalized.length + 1
-  
-  while (out.length < 100) {
-    const seed = normalized[idx % normalized.length]
-    const variants = variantsFrom(seed, variantCounter, currentId)
-    out.push(...variants)
-    currentId += 2 // Öka med 2 eftersom varje seed skapar 2 varianter
-    variantCounter++
-    idx++
-  }
-  out = out.slice(0, 100)
-  
-  return out
+  // För nu, returnera bara de första 10 recepten med fullständig information
+  return base.slice(0, 10)
 }
 
 export const defaultRecipes: Recipe[] = expandToHundred(baseRecipes)

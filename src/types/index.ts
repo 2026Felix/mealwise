@@ -6,14 +6,35 @@ export interface Ingredient {
   unit: string
 }
 
+export interface NutritionFacts {
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  fiber?: number
+  sugar?: number
+  sodium?: number
+}
+
 export interface Recipe {
   id: string
   name: string
+  description?: string
   ingredients: Ingredient[]
+  instructions: string[]
   prepTime: number
+  cookTime?: number
+  totalTime: number
+  servings: number
   category?: 'vegetables' | 'carbs' | 'protein' | 'dairy'
   difficulty?: 'easy' | 'medium' | 'hard'
   image?: string
+  nutrition?: NutritionFacts
+  tags?: string[]
+  author?: string
+  source?: string
+  rating?: number
+  reviewCount?: number
 }
 
 // Ny typ för måltidsinstanser med unik identifierare

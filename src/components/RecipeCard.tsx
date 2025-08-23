@@ -1,7 +1,7 @@
 import { Recipe } from '../types'
 import { useState, useEffect } from 'react'
 import { isValidRecipe } from '../utils/validation'
-import { Plus } from 'lucide-react'
+import { Plus, Eye } from 'lucide-react'
 
 // Färgkodning för receptkategorier
 const getCategoryColor = (category?: string) => {
@@ -21,6 +21,7 @@ interface RecipeCardProps {
 	overlapIngredients?: string[]
 	onAddToDay?: (recipe: Recipe) => void
 	showAddButton?: boolean
+	onShowDetails?: (recipe: Recipe) => void
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ 
@@ -28,7 +29,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 	showOverlap = false, 
 	overlapCount = 0,
 	onAddToDay,
-	showAddButton = false
+	showAddButton = false,
+	onShowDetails
 }) => {
 	const [isDragging, setIsDragging] = useState(false)
 	const [isMobile, setIsMobile] = useState(false)
@@ -65,6 +67,13 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 	const handleAddToDay = () => {
 		if (onAddToDay) {
 			onAddToDay(recipe)
+		}
+	}
+
+	const handleShowDetails = (e: React.MouseEvent) => {
+		e.stopPropagation()
+		if (onShowDetails) {
+			onShowDetails(recipe)
 		}
 	}
 
@@ -109,16 +118,30 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
 					</div>
 				)}
 
-				{/* Mobil "Lägg till"-knapp */}
-				{isMobile && showAddButton && onAddToDay && (
-					<button
-						onClick={handleAddToDay}
-						className="ml-2 p-1.5 bg-text/10 hover:bg-text/20 rounded-lg transition-colors touch-target"
-						title="Lägg till i veckoplan"
-					>
-						<Plus className="w-3 h-3 text-text/60" />
-					</button>
-				)}
+				{/* Knappar */}
+				<div className="flex items-center gap-1 ml-2">
+					{/* Visa detaljer knapp */}
+					{onShowDetails && (
+						<button
+							onClick={handleShowDetails}
+							className="p-1.5 bg-text/10 hover:bg-text/20 rounded-lg transition-colors touch-target"
+							title="Visa receptdetaljer"
+						>
+							<Eye className="w-3 h-3 text-text/60" />
+						</button>
+					)}
+					
+					{/* Mobil "Lägg till"-knapp */}
+					{isMobile && showAddButton && onAddToDay && (
+						<button
+							onClick={handleAddToDay}
+							className="p-1.5 bg-text/10 hover:bg-text/20 rounded-lg transition-colors touch-target"
+							title="Lägg till i veckoplan"
+						>
+							<Plus className="w-3 h-3 text-text/60" />
+						</button>
+					)}
+				</div>
 			</div>
 
 			{/* Desktop drag-indikator */}

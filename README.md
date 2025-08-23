@@ -31,7 +31,7 @@ Mealwise hjälper dig att:
 
 ## 📱 Länk till projektet
 
-Besök (https://mealwise-ivory.vercel.app/#/) för att börja planera dina måltider!
+Besök [mealwise-ivory.vercel.app](https://mealwise-ivory.vercel.app/) för att börja planera dina måltider!
 
 ## 📄 Licens
 

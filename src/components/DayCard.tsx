@@ -2,7 +2,9 @@ import type { DayPlan } from '../types'
 import { useRecipeContext } from '../context/RecipeContext'
 import { safeDragDataParse } from '../utils/validation'
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, X } from 'lucide-react'
+import { ChevronDown, X, Eye } from 'lucide-react'
+import RecipeDetailModal from './RecipeDetailModal'
+import { Recipe } from '../types'
 
 // Färgkodning för receptkategorier
 const getCategoryColor = (category?: string) => {
@@ -25,6 +27,8 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 	const [isDragOver, setIsDragOver] = useState(false)
 	const [dragCounter, setDragCounter] = useState(0)
 	const [isMobile, setIsMobile] = useState(false)
+	const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+	const [showRecipeDetails, setShowRecipeDetails] = useState(false)
 	const dropZoneRef = useRef<HTMLDivElement>(null)
 
 	// Detektera om användaren är på mobil
@@ -112,6 +116,16 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 		})
 	}
 
+	const handleShowRecipeDetails = (recipe: Recipe) => {
+		setSelectedRecipe(recipe)
+		setShowRecipeDetails(true)
+	}
+
+	const handleCloseRecipeDetails = () => {
+		setShowRecipeDetails(false)
+		setSelectedRecipe(null)
+	}
+
 	// På mobil läggs recept till via receptlistan (RecipeLibrary); ingen dag-klick-funktion här
 
 	return (
@@ -195,6 +209,15 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 												{mealInstance.recipe.name}
 											</h4>
 										</div>
+										
+										{/* Visa detaljer knapp */}
+										<button
+											onClick={() => handleShowRecipeDetails(mealInstance.recipe)}
+											className="ml-1 p-1 bg-text/10 hover:bg-text/20 rounded transition-colors touch-target opacity-0 group-hover:opacity-100"
+											title="Visa receptdetaljer"
+										>
+											<Eye className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-text/60" />
+										</button>
 									</div>
 								</div>
 							)
@@ -204,6 +227,15 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 			</div>
 
 			{/* Ingen mobil receptväljare här; använd RecipeLibrary för att välja dag */}
+
+			{/* Receptdetaljer modal */}
+			{selectedRecipe && (
+				<RecipeDetailModal
+					recipe={selectedRecipe}
+					isOpen={showRecipeDetails}
+					onClose={handleCloseRecipeDetails}
+				/>
+			)}
 		</div>
 	)
 }

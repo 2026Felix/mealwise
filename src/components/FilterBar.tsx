@@ -34,14 +34,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
         ))}
       </div>
 
-      {/* Enkel "rensa alla filter" länk */}
+      {/* Enkel "Rensa filter" länk */}
       {activeFilters.size > 0 && (
         <div className="mb-4 text-center">
           <button
             onClick={onClearFilters}
             className="text-text/70 hover:text-text underline text-sm"
           >
-            rensa alla filter
+            Rensa filter
           </button>
         </div>
       )}

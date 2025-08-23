@@ -1,10 +1,12 @@
 import { useRecipeContext } from '../context/RecipeContext'
 import { useState, useMemo, useEffect } from 'react'
 import RecipeCard from './RecipeCard'
+import RecipeDetailModal from './RecipeDetailModal'
 import { Search } from 'lucide-react'
 import { sanitizeUserInput } from '../utils/security'
 import { commonClasses } from '../utils/commonStyles'
 import { FilterType } from '../hooks/useRecipeFilters'
+import { Recipe } from '../types'
 
 interface RecipeLibraryProps {
   activeFilters: Set<FilterType>
@@ -23,6 +25,8 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [showDaySelector, setShowDaySelector] = useState(false)
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+  const [showRecipeDetails, setShowRecipeDetails] = useState(false)
 
   // Filtrera recept baserat på sökfältet och aktiva filter
   const filteredRecipes = useMemo(() => {
@@ -87,6 +91,16 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
     setShowDaySelector(true)
   }
 
+  const handleShowRecipeDetails = (recipe: Recipe) => {
+    setSelectedRecipe(recipe)
+    setShowRecipeDetails(true)
+  }
+
+  const handleCloseRecipeDetails = () => {
+    setShowRecipeDetails(false)
+    setSelectedRecipe(null)
+  }
+
   return (
     <div className="bg-component rounded-lg p-3 sm:p-4 md:p-6 border border-gray-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
@@ -94,22 +108,35 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
           Alla recept
         </h2>
         
-        {/* Sökfält */}
-        <div className="relative w-full sm:w-64">
-          <input
-            type="text"
-            placeholder="Sök recept eller ingredienser..."
-            value={searchQuery}
-            onChange={(e) => {
-              // Begränsa input-längd direkt vid inmatning
-              const value = e.target.value.slice(0, 50)
-              setSearchQuery(value)
-            }}
-            className={commonClasses.input}
-          />
-          <Search 
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text/40" 
-          />
+        {/* Höger sida: Sökfält och Rensa filter */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {/* Sökfält */}
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Sök recept eller ingredienser..."
+              value={searchQuery}
+              onChange={(e) => {
+                // Begränsa input-längd direkt vid inmatning
+                const value = e.target.value.slice(0, 50)
+                setSearchQuery(value)
+              }}
+              className={commonClasses.input}
+            />
+            <Search 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text/40" 
+            />
+          </div>
+          
+          {/* Rensa filter knapp */}
+          {activeFilters.size > 0 && (
+            <button
+              onClick={onClearFilters}
+              className="text-text/70 hover:text-text underline text-sm whitespace-nowrap"
+            >
+              Rensa filter
+            </button>
+          )}
         </div>
       </div>
 
@@ -130,18 +157,6 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
           </button>
         ))}
       </div>
-      
-      {/* Enkel "rensa alla filter" länk */}
-      {activeFilters.size > 0 && (
-        <div className="mb-4 text-center">
-          <button
-            onClick={onClearFilters}
-            className="text-text/70 hover:text-text underline text-sm"
-          >
-            rensa alla filter
-          </button>
-        </div>
-      )}
       
       {filteredRecipes.length === 0 && (searchQuery.trim() || activeFilters.size > 0) ? (
         <div className="text-center py-6 sm:py-8">
@@ -169,6 +184,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
               recipe={recipe}
               showAddButton={true}
               onAddToDay={() => openDaySelector(recipe)}
+              onShowDetails={handleShowRecipeDetails}
             />
           ))}
         </div>
@@ -208,6 +224,15 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Receptdetaljer modal */}
+      {selectedRecipe && (
+        <RecipeDetailModal
+          recipe={selectedRecipe}
+          isOpen={showRecipeDetails}
+          onClose={handleCloseRecipeDetails}
+        />
       )}
     </div>
   )

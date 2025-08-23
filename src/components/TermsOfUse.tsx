@@ -22,7 +22,7 @@ const TermsOfUse: React.FC = () => {
              I produktionsmiljö använder vi <span className="font-medium text-text">Plausible Analytics</span> för anonym, cookie‑fri
              trafikmätning på aggregerad nivå. Detta inkluderar spårning av sidvisningar, filnedladdningar, externa länkar
              och anpassade händelser för att förstå hur tjänsten används och förbättra den.
-             All data är anonymiserad och aggregerad. Läs mer i <a className="underline" href="#/privacy">Integritetspolicyn</a>.
+             All data är anonymiserad och aggregerad. Läs mer i <a className="underline" href="/privacy">Integritetspolicyn</a>.
            </p>
          </section>
         <section className="space-y-3 mt-6">

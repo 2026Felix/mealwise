@@ -17,7 +17,7 @@ export const useRecipeFilters = () => {
     setActiveFilters(newFilters)
   }
 
-  // Rensa alla filter
+  // Rensa filter
   const clearFilters = () => {
     setActiveFilters(new Set())
   }
