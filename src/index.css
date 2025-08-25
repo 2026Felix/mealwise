@@ -7,14 +7,14 @@
 
 @layer base {
   :root {
-    /* Light mode colors */
+    /* Neutral light mode colors */
     --background: #ffffff;
     --component: #f8fafc;
     --text: #1e293b;
   }
 
   .dark {
-    /* Dark mode colors */
+    /* Neutral dark mode colors */
     --background: #0f172a;
     --component: #1e293b;
     --text: #f1f5f9;
@@ -33,10 +33,10 @@
   }
 }
 
-/* Custom scrollbar styles for both light and dark modes */
+/* Minimalistisk scrollbar för alla element */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -44,13 +44,47 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--text);
-  opacity: 0.2;
-  border-radius: 4px;
+  background: #d1d5db;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  opacity: 0.3;
+  background: #9ca3af;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #6b7280;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+/* Custom scrollbar styles for both light and dark modes */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #6b7280;
 }
 
 /* Responsive touch improvements */
@@ -183,16 +217,16 @@
 /* Desktop improvements */
 @media (min-width: 1025px) {
   /* Hover effects only on desktop */
-  .hover\:bg-text\/90:hover {
-    background-color: rgb(var(--text) / 0.9);
+  .hover\:bg-gray-900:hover {
+    background-color: rgb(17 24 39);
   }
   
-  .hover\:bg-text\/80:hover {
-    background-color: rgb(var(--text) / 0.8);
+  .hover\:bg-gray-800:hover {
+    background-color: rgb(31 41 55);
   }
   
-  .hover\:text-text\/80:hover {
-    color: rgb(var(--text) / 0.8);
+  .hover\:text-gray-800:hover {
+    color: rgb(31 41 55);
   }
   
   .hover\:bg-gray-50:hover {
@@ -219,12 +253,12 @@
     color: rgb(209 213 219);
   }
   
-  .hover\:text-red-300:hover {
-    color: rgb(252 165 165);
+  .hover\:text-gray-400:hover {
+    color: rgb(156 163 175);
   }
   
-  .hover\:text-blue-300:hover {
-    color: rgb(147 197 253);
+  .hover\:text-gray-500:hover {
+    color: rgb(107 114 128);
   }
   
   .hover\:shadow-md:hover {
@@ -244,33 +278,31 @@
   input[type="submit"],
   input[type="reset"],
   a.button {
-    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   }
 
-  button:hover,
+  button:hover:not(.toggle-switch),
   [role="button"]:hover,
   input[type="button"]:hover,
   input[type="submit"]:hover,
   input[type="reset"]:hover,
   a.button:hover {
-    filter: invert(1) hue-rotate(180deg);
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
+    /* Removed filter invert to keep text color consistent */
   }
 }
 
 /* Onboarding highlight animation */
 .onboarding-highlight {
   animation: highlight-pulse 2s ease-in-out infinite;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 4px rgba(75, 85, 99, 0.5);
 }
 
 @keyframes highlight-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 4px rgba(75, 85, 99, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 8px rgba(75, 85, 99, 0.3);
   }
 }
 
@@ -299,3 +331,5 @@
     scroll-behavior: smooth;
   }
 }
+
+

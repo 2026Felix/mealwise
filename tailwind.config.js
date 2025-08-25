@@ -7,12 +7,18 @@ export default {
   darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
+      // All custom colors removed for neutral styling
       colors: {
-        background: 'var(--background)',
-        component: 'var(--component)',
-        text: 'var(--text)',
+        // Behåll standard Tailwind-färger
       },
+      fontFamily: {
+        // Behåll standard Tailwind-typsnitt
+      }
     },
   },
   plugins: [],
+  // Prestandaoptimeringar
+  future: {
+    hoverOnlyWhenSupported: true,
+  }
 }

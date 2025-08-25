@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRecipeContext } from '../context/RecipeContext'
 import { logger, LogLevel } from '../utils/logger'
 import { ChevronDown, Trash2, Download, Search } from 'lucide-react'
+import { buttonStyles } from '../utils/commonStyles'
 
 interface DebugPanelProps {
   isVisible: boolean
@@ -197,7 +198,7 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ isVisible, onToggle }) => {
 
                 <button
                   onClick={handleClearLogs}
-                  className="flex items-center gap-1 text-red-400 hover:text-red-300"
+                  className={buttonStyles.gradientSmall}
                 >
                   <Trash2 className="w-3 h-3" />
                   <span className="hidden sm:inline">Rensa</span>
@@ -205,7 +206,7 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ isVisible, onToggle }) => {
 
                 <button
                   onClick={handleExportLogs}
-                  className="flex items-center gap-1 text-blue-400 hover:text-blue-300"
+                  className={buttonStyles.gradientSmall}
                 >
                   <Download className="w-3 h-3" />
                   <span className="hidden sm:inline">Exportera</span>

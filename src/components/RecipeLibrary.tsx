@@ -7,6 +7,7 @@ import { sanitizeUserInput } from '../utils/security'
 import { commonClasses } from '../utils/commonStyles'
 import { FilterType } from '../hooks/useRecipeFilters'
 import { Recipe } from '../types'
+import { buttonStyles } from '../utils/commonStyles'
 
 interface RecipeLibraryProps {
   activeFilters: Set<FilterType>
@@ -102,13 +103,27 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
   }
 
   return (
-    <div className="bg-component rounded-lg p-3 sm:p-4 md:p-6 border border-gray-200">
+    <div id="recipe-library" className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-6 border border-gray-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-        <h2 className="text-lg sm:text-xl font-semibold text-text">
-          Alla recept
-        </h2>
+        <div className="flex items-center justify-between sm:block">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Alla recept
+          </h2>
+          
+          {/* Rensa filter länk - endast synlig på mobil, i linje med titeln */}
+          {activeFilters.size > 0 && filteredRecipes.length > 0 && (
+            <div className="sm:hidden">
+              <button
+                onClick={onClearFilters}
+                className="text-gray-700 hover:text-gray-900 underline text-sm transition-colors"
+              >
+                Rensa filter
+              </button>
+            </div>
+          )}
+        </div>
         
-        {/* Höger sida: Sökfält och Rensa filter */}
+        {/* Höger sida: Sökfält */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Sökfält */}
           <div className="relative w-full sm:w-64">
@@ -124,43 +139,49 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
               className={commonClasses.input}
             />
             <Search 
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text/40" 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
             />
           </div>
-          
-          {/* Rensa filter knapp */}
-          {activeFilters.size > 0 && (
-            <button
-              onClick={onClearFilters}
-              className="text-text/70 hover:text-text underline text-sm whitespace-nowrap"
-            >
-              Rensa filter
-            </button>
-          )}
         </div>
       </div>
 
       {/* Filter-knappar */}
       <div className={commonClasses.filter.container}>
-        {filterButtons.map(({ key, label, description }) => (
-          <button
-            key={key}
-            onClick={() => onToggleFilter(key)}
-            className={`${commonClasses.filter.button.base} ${
-              activeFilters.has(key) 
-                ? commonClasses.filter.button.active 
-                : commonClasses.filter.button.inactive
-            }`}
-            title={description}
-          >
-            {label}
-          </button>
-        ))}
+        <div className="flex flex-wrap gap-2 flex-1">
+          {filterButtons.map(({ key, label, description }) => (
+            <button
+              key={key}
+              onClick={() => onToggleFilter(key)}
+              className={`${buttonStyles.filterTag} ${
+                activeFilters.has(key) 
+                  ? buttonStyles.filterTagActive
+                  : ''
+              }`}
+              title={description}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        
+        {/* Rensa filter länk - flyttad till höger sida av filter-taggarna, endast synlig på desktop */}
+        {activeFilters.size > 0 && filteredRecipes.length > 0 && (
+          <div className="hidden sm:block">
+            <button
+              onClick={onClearFilters}
+              className="text-gray-700 hover:text-gray-900 underline text-sm transition-colors whitespace-nowrap"
+            >
+              Rensa filter
+            </button>
+          </div>
+        )}
       </div>
+      
+      {/* Ta bort den gamla "Rensa filter" sektionen */}
       
       {filteredRecipes.length === 0 && (searchQuery.trim() || activeFilters.size > 0) ? (
         <div className="text-center py-6 sm:py-8">
-          <p className="text-text/60 text-sm">
+          <p className="text-gray-600 text-sm">
             {searchQuery.trim() 
               ? `Inga recept hittades för "${sanitizeUserInput(searchQuery, 50)}"`
               : 'Inga recept matchar de valda filtren'
@@ -171,7 +192,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
               setSearchQuery('')
               onClearFilters()
             }}
-            className="mt-2 text-text/80 hover:text-text underline text-sm"
+            className="mt-2 text-gray-700 hover:text-gray-900 underline text-sm"
           >
             Rensa sökning och filter
           </button>
@@ -182,7 +203,6 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
             <RecipeCard 
               key={recipe.id} 
               recipe={recipe}
-              showAddButton={true}
               onAddToDay={() => openDaySelector(recipe)}
               onShowDetails={handleShowRecipeDetails}
             />
@@ -192,11 +212,14 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
 
       {/* Mobil dag-väljare */}
       {showDaySelector && selectedDay && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-4 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-text mb-4">Välj dag</h3>
+        <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">
+              <span className="text-sm font-normal text-gray-600">Välj dag för: </span>
+              <span className="text-xl font-bold text-gray-900">{state.recipeLibrary.find(r => r.id === selectedDay)?.name}</span>
+            </h3>
             
-            <div className="space-y-2">
+            <div className="space-y-3 mb-8">
               {state.weekPlan.map((day) => (
                 <button
                   key={day.day}
@@ -206,11 +229,15 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
                       handleAddToDay(recipe, day.day)
                     }
                   }}
-                  className="w-full text-left p-3 bg-component hover:bg-text/10 rounded-lg transition-colors touch-target"
+                  className={`w-full text-left p-4 rounded-lg transition-colors touch-target ${
+                    day.recipes.length > 0 
+                      ? 'bg-gray-50 hover:bg-gray-100 border border-gray-300' 
+                      : 'bg-white border border-dashed border-gray-300 hover:bg-gray-50'
+                  }`}
                 >
-                  <span className="font-medium text-text">{day.day}</span>
-                  <span className="text-sm text-text/60 ml-2">
-                    ({day.recipes.length} recept)
+                  <span className="font-medium text-gray-900">{day.day}</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    | {day.recipes.length === 0 ? 'Inga måltider planerade' : day.recipes.length === 1 ? '1 måltid planerad' : `${day.recipes.length} måltider planerade`}
                   </span>
                 </button>
               ))}
@@ -218,7 +245,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
             
             <button
               onClick={() => setShowDaySelector(false)}
-              className="w-full mt-4 p-3 bg-text/10 hover:bg-text/20 text-text rounded-lg transition-colors touch-target"
+              className={buttonStyles.gradient}
             >
               Avbryt
             </button>

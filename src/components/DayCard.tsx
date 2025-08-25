@@ -1,18 +1,19 @@
 import type { DayPlan } from '../types'
 import { useRecipeContext } from '../context/RecipeContext'
 import { safeDragDataParse } from '../utils/validation'
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, X, Eye } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
+import { ChevronDown, X, CookingPot, Plus } from 'lucide-react'
 import RecipeDetailModal from './RecipeDetailModal'
 import { Recipe } from '../types'
+import { buttonStyles } from '../utils/commonStyles'
 
-// Färgkodning för receptkategorier
+// Neutral färgkodning för receptkategorier
 const getCategoryColor = (category?: string) => {
 	switch (category) {
-		case 'vegetables': return '#D6E8DA' // Ljusgrön
-		case 'carbs': return '#FEF0C1'      // Ljusgul
-		case 'protein': return '#F8D1D1'    // Ljusrosa (bytt plats)
-		case 'dairy': return '#A7C7E7'      // Ljusblå (bytt plats)
+		case 'vegetables': return '#f3f4f6' // Ljusgrå
+		case 'carbs': return '#f9fafb'      // Mycket ljusgrå
+		case 'protein': return '#f3f4f6'    // Ljusgrå
+		case 'dairy': return '#f9fafb'      // Mycket ljusgrå
 		default: return 'transparent'
 	}
 }
@@ -22,7 +23,7 @@ interface DayCardProps {
 	isGlobalDragActive?: boolean
 }
 
-const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) => {
+const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false }) => {
 	const { dispatch } = useRecipeContext()
 	const [isDragOver, setIsDragOver] = useState(false)
 	const [dragCounter, setDragCounter] = useState(0)
@@ -43,30 +44,30 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 		return () => window.removeEventListener('resize', checkMobile)
 	}, [])
 
-	const handleDragOver = (e: React.DragEvent) => {
+	const handleDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
 		if (e.dataTransfer.types.includes('application/json')) {
 			setIsDragOver(true)
 		}
-	}
+	}, [])
 
-	const handleDragEnter = (e: React.DragEvent) => {
+	const handleDragEnter = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
 		if (e.dataTransfer.types.includes('application/json')) {
 			setDragCounter(prev => prev + 1)
 			setIsDragOver(true)
 		}
-	}
+	}, [])
 
-	const handleDragLeave = (e: React.DragEvent) => {
+	const handleDragLeave = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
 		setDragCounter(prev => prev - 1)
 		if (dragCounter <= 1) {
 			setIsDragOver(false)
 		}
-	}
+	}, [dragCounter])
 
-	const handleDrop = (e: React.DragEvent) => {
+	const handleDrop = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
 		setIsDragOver(false)
 		setDragCounter(0)
@@ -106,33 +107,45 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 				recipe
 			})
 		}
-	}
+	}, [day.day, dispatch])
 
-	const removeRecipe = (instanceId: string) => {
+	const removeRecipe = useCallback((instanceId: string) => {
 		dispatch({
 			type: 'REMOVE_RECIPE_FROM_DAY',
 			day: day.day,
 			instanceId
 		})
-	}
+	}, [day.day, dispatch])
 
-	const handleShowRecipeDetails = (recipe: Recipe) => {
+	const handleShowRecipeDetails = useCallback((recipe: Recipe) => {
 		setSelectedRecipe(recipe)
 		setShowRecipeDetails(true)
-	}
+	}, [])
 
-	const handleCloseRecipeDetails = () => {
+	const handleCloseRecipeDetails = useCallback(() => {
 		setShowRecipeDetails(false)
 		setSelectedRecipe(null)
-	}
+	}, [])
 
 	// På mobil läggs recept till via receptlistan (RecipeLibrary); ingen dag-klick-funktion här
+	const handleEmptyDayClick = useCallback(() => {
+		if (!isMobile) return
+		const el = document.getElementById('recipe-library')
+		if (el) {
+			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+			// Fokusera sökfältet efter en kort stund så användaren kan börja skriva direkt
+			setTimeout(() => {
+				const input = el.querySelector('input[type="text"]') as HTMLInputElement | null
+				if (input) input.focus()
+			}, 300)
+		}
+	}, [isMobile])
 
 	return (
-		<div className="bg-component rounded-xl p-2">
+		<div className="bg-gray-50 rounded-xl p-2">
 			{/* Dag-header */}
 			<div className="flex items-center justify-between mb-2">
-				<h3 className="text-xs sm:text-sm font-semibold text-text">{day.day}</h3>
+				<h3 className="text-xs sm:text-sm font-semibold text-gray-900">{day.day}</h3>
 				{/* Lägg till recept sker via receptlistan på mobil */}
 			</div>
 
@@ -141,31 +154,41 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 				ref={dropZoneRef}
 				className={`min-h-[48px] sm:min-h-[64px] rounded-lg border-2 border-dashed transition-colors duration-200 ${
 					isDragOver
-						? 'border-text bg-text/10 scale-[1.02] shadow-lg'
+						? 'border-gray-600 bg-gray-100 scale-[1.02] shadow-lg'
 						: isGlobalDragActive
-						? 'border-text/30 bg-text/5 hover:border-text/40 hover:bg-text/8'
-						: 'border-text/20 bg-text/3 hover:border-text/30 hover:bg-text/5'
-				} ${day.recipes.length === 0 ? 'flex items-center' : ''}`}
+						? 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
+						: 'border-gray-200 bg-gray-25 hover:border-gray-300 hover:bg-gray-50'
+				} ${day.recipes.length === 0 ? 'flex items-center cursor-pointer' : ''}`}
 				onDragOver={handleDragOver}
 				onDragEnter={handleDragEnter}
 				onDragLeave={handleDragLeave}
 				onDrop={handleDrop}
+				title={isMobile ? 'Lägg till via receptlistan' : 'Dra hit recept'}
+				aria-label={isMobile ? 'Lägg till via receptlistan' : 'Dra hit recept'}
+				onClick={() => {
+					if (day.recipes.length === 0) handleEmptyDayClick()
+				}}
 			>
 				{day.recipes.length === 0 ? (
 					// Tom dag - visa hjälptext
 					<div className={`h-full w-full flex flex-col items-center justify-center p-1 sm:p-2 text-center transition-colors duration-200 ${
-						isDragOver ? 'text-text' : 'text-text/60'
+						isDragOver ? 'text-gray-900' : 'text-gray-600'
 					}`}>
 						{isDragOver ? (
 							<>
-								<ChevronDown className="w-4 sm:w-6 h-4 sm:h-6 mb-1 text-text" />
+								<ChevronDown className="w-4 sm:w-6 h-4 sm:h-6 mb-1 text-gray-900" />
 								<p className="text-xs sm:text-sm font-medium">Släpp receptet här!</p>
 							</>
 						) : (
 							<>
-								<p className="text-xs text-gray-400">
-									{isMobile ? 'Lägg till via receptlistan' : 'Dra hit recept'}
-								</p>
+								{isMobile ? (
+									<>
+										<Plus className="w-4 h-4 text-gray-400" aria-hidden="true" />
+										<span className="sr-only">Lägg till via receptlistan</span>
+									</>
+								) : (
+									<p className="text-xs text-gray-400">Dra hit recept</p>
+								)}
 							</>
 						)}
 					</div>
@@ -177,7 +200,7 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 							return (
 								<div
 									key={mealInstance.instanceId}
-									className="bg-background rounded-lg p-1.5 sm:p-2 h-full cursor-move relative group hover:bg-background/80 transition-colors duration-200 border touch-manipulation"
+									className="bg-white rounded-lg p-1.5 sm:p-2 h-full cursor-move relative group hover:bg-gray-50 transition-colors duration-200 border touch-manipulation"
 									style={{
 										borderColor: categoryColor !== 'transparent' ? categoryColor : undefined,
 										borderWidth: categoryColor !== 'transparent' ? '2px' : '1px'
@@ -192,32 +215,35 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 										e.dataTransfer.effectAllowed = 'move'
 									}}
 								>
-									{/* Ta bort-knapp */}
-									<button
-										onClick={() => removeRecipe(mealInstance.instanceId)}
-										className="absolute -top-0.5 -right-0.5 w-4 sm:w-5 h-4 sm:h-5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-colors duration-200 flex items-center justify-center touch-target"
-										title="Ta bort recept"
-									>
-										<X className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
-									</button>
-
 									{/* Recept-innehåll */}
-									<div className="flex items-center justify-center h-full">
+									<div className="flex items-center justify-start h-full relative">
 										{/* Recept-info (endast namn) */}
-										<div className="flex-1 min-w-0 text-center">
-											<h4 className="font-medium text-text text-xs sm:text-sm leading-none truncate" title={mealInstance.recipe.name}>
+										<div className="flex-1 min-w-0 text-left">
+											<h4 className="font-medium text-gray-900 text-sm leading-none truncate" title={mealInstance.recipe.name}>
 												{mealInstance.recipe.name}
 											</h4>
 										</div>
 										
-										{/* Visa detaljer knapp */}
-										<button
-											onClick={() => handleShowRecipeDetails(mealInstance.recipe)}
-											className="ml-1 p-1 bg-text/10 hover:bg-text/20 rounded transition-colors touch-target opacity-0 group-hover:opacity-100"
-											title="Visa receptdetaljer"
-										>
-											<Eye className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-text/60" />
-										</button>
+										{/* Knappar bredvid varandra i hörnet */}
+										<div className="absolute -top-1.5 sm:top-1/2 sm:-translate-y-1/2 -right-1.5 flex items-center gap-1">
+											{/* Visa detaljer knapp */}
+											<button
+												onClick={() => handleShowRecipeDetails(mealInstance.recipe)}
+												className={buttonStyles.iconTransparentSmall}
+												title="Visa receptdetaljer"
+											>
+												<CookingPot className="w-4 sm:w-4 h-4 sm:h-4 text-gray-600" />
+											</button>
+											
+											{/* Ta bort-knapp */}
+											<button
+												onClick={() => removeRecipe(mealInstance.instanceId)}
+												className={buttonStyles.iconTransparentSmall}
+												title="Ta bort recept"
+											>
+												<X className="w-4 sm:w-4 h-4 sm:h-4 text-gray-600" />
+											</button>
+										</div>
 									</div>
 								</div>
 							)
@@ -238,6 +264,8 @@ const DayCard: React.FC<DayCardProps> = ({ day, isGlobalDragActive = false }) =>
 			)}
 		</div>
 	)
-}
+})
+
+DayCard.displayName = 'DayCard'
 
 export default DayCard

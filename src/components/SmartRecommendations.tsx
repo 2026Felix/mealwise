@@ -1,188 +1,209 @@
 import { useRecipeContext } from '../context/RecipeContext'
-import RecipeCard from './RecipeCard'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react'
-import { FilterType } from '../hooks/useRecipeFilters'
+import RecipeCard from './RecipeCard'
+import RecipeDetailModal from './RecipeDetailModal'
+import { buttonStyles } from '../utils/commonStyles'
 
-interface SmartRecommendationsProps {
-  activeFilters: Set<FilterType>
-  onToggleFilter: (filter: FilterType) => void
-  onClearFilters: () => void
-  filterButtons: Array<{ key: FilterType; label: string; description: string }>
-}
+const SmartRecommendations: React.FC = memo(() => {
+  const { state, dispatch } = useRecipeContext()
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null)
+  const [showRecipeDetails, setShowRecipeDetails] = useState(false)
+  const [showDaySelector, setShowDaySelector] = useState(false)
 
-const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
-  activeFilters,
-}) => {
-	const { state, dispatch } = useRecipeContext()
-	const [isCollapsed, setIsCollapsed] = useState(false)
-	const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
-	const [showDaySelector, setShowDaySelector] = useState(false)
+  // Beräkna smarta rekommendationer baserat på gemensamma ingredienser
+  const recommendations = useMemo(() => {
+    if (!state.weekPlan.length) return []
 
-	// Använd de smarta rekommendationerna från RecipeContext
-	const suggestions = state.suggestions
+    // Samla alla planerade ingredienser
+    const plannedIngredients = new Set<string>()
+    state.weekPlan.forEach(day => {
+      day.recipes.forEach(mealInstance => {
+        mealInstance.recipe.ingredients.forEach(ingredient => {
+          plannedIngredients.add(ingredient.name.toLowerCase())
+        })
+      })
+    })
 
-	// Beräkna gemensamma ingredienser för varje förslag och sortera
-	const suggestionsWithOverlap = useMemo(() => {
-		const plannedRecipes = state.weekPlan.flatMap(day => day.recipes.map(mi => mi.recipe))
-		
-		const suggestionsWithCount = suggestions.map(recipe => {
-			let commonIngredientsCount = 0
-			const commonIngredientNames: string[] = []
-			
-			// Räkna gemensamma ingredienser med alla planerade måltider
-			plannedRecipes.forEach(plannedRecipe => {
-				const recipeIngredients = new Set(recipe.ingredients.map(i => i.name.toLowerCase().trim()))
-				const plannedIngredients = new Set(plannedRecipe.ingredients.map(i => i.name.toLowerCase().trim()))
-				
-				// Hitta gemensamma ingredienser med mjukare matchning
-				plannedIngredients.forEach(plannedIngredient => {
-					recipeIngredients.forEach(recipeIngredient => {
-						if (plannedIngredient.includes(recipeIngredient) || recipeIngredient.includes(plannedIngredient)) {
-							if (!commonIngredientNames.includes(plannedIngredient)) {
-								commonIngredientNames.push(plannedIngredient)
-								commonIngredientsCount++
-							}
-						}
-					})
-				})
-			})
-			
-			return {
-				recipe,
-				commonIngredientsCount,
-				commonIngredientNames
-			}
-		})
-		
-		// Sortera efter antal gemensamma ingredienser (högst först)
-		return suggestionsWithCount.sort((a, b) => b.commonIngredientsCount - a.commonIngredientsCount)
-	}, [suggestions, state.weekPlan])
+    // Hitta recept som delar ingredienser med planerade måltider
+    const recommendationsWithOverlap = state.recipeLibrary
+      .filter(recipe => {
+        // Exkludera redan planerade recept
+        const isAlreadyPlanned = state.weekPlan.some(day =>
+          day.recipes.some(mealInstance => mealInstance.recipe.id === recipe.id)
+        )
+        if (isAlreadyPlanned) return false
 
-	// Filtrera rekommendationer baserat på aktiva filter
-	const filteredSuggestions = useMemo(() => {
-		if (activeFilters.size === 0) return suggestionsWithOverlap
+        // Beräkna överlapp med planerade ingredienser
+        const recipeIngredients = recipe.ingredients.map(ing => ing.name.toLowerCase())
+        const overlap = recipeIngredients.filter(ing => plannedIngredients.has(ing))
+        return overlap.length > 0
+      })
+      .map(recipe => {
+        const recipeIngredients = recipe.ingredients.map(ing => ing.name.toLowerCase())
+        const overlap = recipeIngredients.filter(ing => plannedIngredients.has(ing))
+        return {
+          ...recipe,
+          overlapCount: overlap.length,
+          overlapIngredients: overlap
+        }
+      })
+      .sort((a, b) => b.overlapCount - a.overlapCount) // Sortera efter mest överlapp
 
-		return suggestionsWithOverlap.filter(({ recipe }) => {
-			// BILLIG - recept med färre ingredienser eller kortare tillagningstid
-			if (activeFilters.has('billig') && !(
-				recipe.ingredients.length <= 4 || recipe.prepTime <= 30
-			)) return false
+    return recommendationsWithOverlap
+  }, [state.weekPlan, state.recipeLibrary])
 
-			// ENKEL - recept med låg svårighetsgrad
-			if (activeFilters.has('enkel') && recipe.difficulty !== 'easy') return false
+  const hasRecommendations = recommendations.length > 0
 
-			// SNABB - recept med kort tillagningstid
-			if (activeFilters.has('snabb') && recipe.prepTime > 30) return false
+  const handleShowRecipeDetails = useCallback((recipe: any) => {
+    setSelectedRecipe(recipe)
+    setShowRecipeDetails(true)
+  }, [])
 
-			// VEGETARISK - recept utan kött/fisk
-			if (activeFilters.has('vegetarisk') && recipe.category === 'protein') return false
+  const handleCloseRecipeDetails = useCallback(() => {
+    setShowRecipeDetails(false)
+    setSelectedRecipe(null)
+  }, [])
 
-			return true
-		})
-	}, [suggestionsWithOverlap, activeFilters])
+  const openDaySelector = useCallback((recipe: any) => {
+    setSelectedRecipe(recipe)
+    setShowDaySelector(true)
+  }, [])
 
-	return (
-		<div className="bg-component rounded-xl p-3 sm:p-4 md:p-6 border border-gray-200">
-			{/* Header med titel och collapse-knapp */}
-			<div className={`flex items-center justify-between ${isCollapsed ? 'mb-0' : 'mb-3'}`}> 
-				<div className="flex items-center gap-2 sm:gap-3">
-					<div className="w-8 h-8 sm:w-10 sm:h-10 bg-text/20 rounded-full flex items-center justify-center">
-						<Brain className="w-4 h-4 sm:w-5 sm:h-5 text-text" />
-					</div>
-					<div>
-						<h2 className="text-lg sm:text-xl font-semibold text-text">
-							Rekommendationer
-						</h2>
-						<p className="text-xs sm:text-sm text-text/60">
-							Baserat på dina planerade måltider
-						</p>
-					</div>
-				</div>
-				
-				<button
-					onClick={() => setIsCollapsed(!isCollapsed)}
-					className="p-1.5 sm:p-2 hover:bg-background rounded-lg transition-colors duration-200 group"
-					title={isCollapsed ? "Expandera" : "Vik ihop"}
-				>
-					{isCollapsed ? (
-						<ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-text/60 group-hover:text-text transition-colors duration-200" />
-					) : (
-						<ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-text/60 group-hover:text-text transition-colors duration-200" />
-					)}
-				</button>
-			</div>
-			
-			{!isCollapsed && (
-				<>
-					{filteredSuggestions.length === 0 ? (
-						<div className="text-center py-6 sm:py-8">
-							<Brain className="w-12 h-12 sm:w-16 sm:h-16 text-text/20 mx-auto mb-3 sm:mb-4" />
-							<p className="text-text/60 text-xs sm:text-sm px-2">
-								{activeFilters.size > 0 
-									? 'Inga rekommendationer matchar de valda filtren. Prova att ändra filter eller lägg till fler recept i din veckoplan.'
-									: 'Lägg till recept i din veckoplan för att få smarta förslag baserat på gemensamma ingredienser.'
-								}
-							</p>
-						</div>
-					) : (
-						<div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto pr-1 sm:pr-2">
-							{filteredSuggestions.map(({ recipe, commonIngredientsCount, commonIngredientNames }) => (
-								<RecipeCard 
-									key={recipe.id} 
-									recipe={recipe}
-									showOverlap={true}
-									overlapCount={commonIngredientsCount}
-									overlapIngredients={commonIngredientNames}
-									onAddToDay={() => {
-										setSelectedRecipeId(recipe.id)
-										setShowDaySelector(true)
-									}}
-								/>
-							))}
-						</div>
-					)}
-				</>
-			)}
+  const handleAddToDay = useCallback((recipe: any, day: string) => {
+    dispatch({
+      type: 'ADD_RECIPE_TO_DAY',
+      day: day,
+      recipe
+    })
+    setShowDaySelector(false)
+    setShowRecipeDetails(false)
+  }, [dispatch])
 
-			{/* Dag-väljare för rekommendationer */}
-				{showDaySelector && selectedRecipeId && (
-					<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-						<div className="bg-component rounded-xl p-4 max-w-sm w-full">
-						<h3 className="text-lg font-semibold text-text mb-4">Välj dag</h3>
-						<div className="space-y-2">
-							{state.weekPlan.map((day) => (
-								<button
-									key={day.day}
-									onClick={() => {
-										const recipe = state.recipeLibrary.find(r => r.id === selectedRecipeId)
-										if (recipe) {
-											dispatch({ type: 'ADD_RECIPE_TO_DAY', day: day.day, recipe })
-										}
-										setSelectedRecipeId(null)
-										setShowDaySelector(false)
-									}}
-									className="w-full text-left p-3 bg-component hover:bg-text/10 rounded-lg transition-colors touch-target"
-								>
-									<span className="font-medium text-text">{day.day}</span>
-									<span className="text-sm text-text/60 ml-2">({day.recipes.length} recept)</span>
-								</button>
-							))}
-						</div>
-						<button
-							onClick={() => {
-							setSelectedRecipeId(null)
-							setShowDaySelector(false)
-						}}
-						className="w-full mt-4 p-3 bg-text/10 hover:bg-text/20 text-text rounded-lg transition-colors touch-target"
-						>
-							Avbryt
-						</button>
-					</div>
-				</div>
-			)}
-		</div>
-	)
-}
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed(prev => !prev)
+  }, [])
+
+  const closeDaySelector = useCallback(() => {
+    setShowDaySelector(false)
+  }, [])
+
+  if (!hasRecommendations) {
+    return (
+      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 md:p-6 border border-gray-200">
+        <div className="text-center">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-gray-700" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-1">
+            Rekommendationer
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm max-w-md mx-auto px-2">
+            Lägg till recept i veckoplanen för att få rekommendationer
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 md:p-6 border border-gray-200">
+        {/* Header med titel, collapse-knapp och filter */}
+        <div className={`flex items-center justify-between ${isCollapsed ? 'mb-0' : 'mb-3 sm:mb-4'}`}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center">
+              <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-gray-700" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Rekommendationer ({recommendations.length})
+              </h2>
+            </div>
+          </div>
+          
+          {/* Collapse-knapp */}
+          <button
+            onClick={toggleCollapse}
+            className="p-1.5 sm:p-2 hover:bg-white rounded-lg transition-colors duration-200 group inline-flex items-center justify-center"
+            title={isCollapsed ? "Expandera" : "Vik ihop"}
+          >
+            {isCollapsed ? (
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-gray-900 transition-colors duration-200" />
+            ) : (
+              <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-gray-900 transition-colors duration-200" />
+            )}
+          </button>
+        </div>
+        
+        {!isCollapsed && (
+          <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto">
+            {recommendations.map((recipe) => (
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe}
+                showOverlap={true}
+                overlapCount={recipe.overlapCount}
+                overlapIngredients={recipe.overlapIngredients}
+                onAddToDay={() => openDaySelector(recipe)}
+                onShowDetails={handleShowRecipeDetails}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal för receptdetaljer */}
+      {selectedRecipe && (
+        <RecipeDetailModal
+          recipe={selectedRecipe}
+          isOpen={showRecipeDetails}
+          onClose={handleCloseRecipeDetails}
+        />
+      )}
+
+      {/* Modal för att välja dag */}
+      {showDaySelector && selectedRecipe && (
+        <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">
+              <span className="text-sm font-normal text-gray-600">Välj dag för: </span>
+              <span className="text-xl font-bold text-gray-900">{selectedRecipe.name}</span>
+            </h3>
+            
+            <div className="space-y-3 mb-8">
+              {state.weekPlan.map((day) => (
+                <button
+                  key={day.day}
+                  onClick={() => handleAddToDay(selectedRecipe, day.day)}
+                  className={`w-full text-left p-4 rounded-lg transition-colors touch-target ${
+                    day.recipes.length > 0 
+                      ? 'bg-gray-50 hover:bg-gray-100 border border-gray-300' 
+                      : 'bg-white border border-dashed border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="font-medium text-gray-900">{day.day}</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    | {day.recipes.length === 0 ? 'Inga måltider planerade' : day.recipes.length === 1 ? '1 måltid planerad' : `${day.recipes.length} måltider planerade`}
+                  </span>
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={closeDaySelector}
+              className={buttonStyles.gradient}
+            >
+              Avbryt
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+})
+
+SmartRecommendations.displayName = 'SmartRecommendations'
 
 export default SmartRecommendations

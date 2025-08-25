@@ -1,14 +1,14 @@
 import { useRecipeContext } from '../context/RecipeContext'
 import { useState } from 'react'
-import { ShoppingCart, ChevronDown, ChevronUp, X, Check } from 'lucide-react'
+import { ShoppingCart, X, Check } from 'lucide-react'
+import { buttonStyles } from '../utils/commonStyles'
 
 const CommonIngredientsDisplay: React.FC = () => {
   const { getIngredientsWithQuantitiesFromContext, state } = useRecipeContext()
   const baseIngredientsWithQuantities = getIngredientsWithQuantitiesFromContext()
-  const [isCollapsed, setIsCollapsed] = useState(false)
   const [showDetailedList, setShowDetailedList] = useState(false)
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set())
-  const [viewMode, setViewMode] = useState<'recipe' | 'shopping'>('recipe')
+  const [viewMode, setViewMode] = useState<'recipe' | 'shopping'>('shopping')
   const [portions, setPortions] = useState(4)
 
   // Beräkna ingredienser baserat på portions
@@ -103,15 +103,15 @@ const CommonIngredientsDisplay: React.FC = () => {
 
   if (!hasPlannedRecipes) {
     return (
-      <div className="bg-component rounded-xl p-3 sm:p-4 border border-gray-200">
+      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
         <div className="text-center">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-text/10 rounded-full flex items-center justify-center mx-auto mb-2">
-            <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-text/40" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-gray-700" />
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-text mb-1">
-            Alla ingredienser
+          <h2 className="text-xl font-semibold text-gray-900 mb-1">
+            Inköpslista
           </h2>
-          <p className="text-text/60 text-xs sm:text-sm max-w-md mx-auto px-2">
+          <p className="text-gray-600 text-xs sm:text-sm max-w-md mx-auto px-2">
             Lägg till recept i veckoplanen
           </p>
         </div>
@@ -121,16 +121,16 @@ const CommonIngredientsDisplay: React.FC = () => {
 
   return (
     <>
-      <div className="bg-component rounded-xl p-3 sm:p-4 border border-gray-200">
-        {/* Header med titel, collapse-knapp och detaljerad lista-knapp */}
-        <div className={`flex items-center justify-between ${isCollapsed ? 'mb-0' : 'mb-3 sm:mb-4'}`}> 
+      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
+        {/* Header med titel och detaljerad lista-knapp */}
+        <div className="flex items-center justify-between mb-0"> 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-text/20 rounded-full flex items-center justify-center">
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-text" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-gray-700" />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-text">
-                Alla ingredienser ({ingredientsWithQuantities.length})
+              <h2 className="text-xl font-semibold text-gray-900">
+                Inköpslista ({ingredientsWithQuantities.length})
               </h2>
             </div>
           </div>
@@ -139,76 +139,50 @@ const CommonIngredientsDisplay: React.FC = () => {
             {/* Visa detaljerad lista knapp */}
             <button
               onClick={() => setShowDetailedList(true)}
-              className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              className={buttonStyles.gradientSmall}
               title="Visa översikt över ingredienser"
             >
-              Inköpslistan
-            </button>
-            
-            {/* Collapse-knapp */}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1.5 sm:p-2 hover:bg-background rounded-lg transition-colors duration-200 group"
-              title={isCollapsed ? "Expandera" : "Vik ihop"}
-            >
-              {isCollapsed ? (
-                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-text/60 group-hover:text-text transition-colors duration-200" />
-              ) : (
-                <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-text/60 group-hover:text-text transition-colors duration-200" />
-              )}
+              visa
             </button>
           </div>
         </div>
-        
-        {!isCollapsed && (
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            {ingredientsWithQuantities.map((ingredient, index) => (
-              <span
-                key={index}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-text text-xs sm:text-sm rounded-full border border-gray-200 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
-              >
-                {ingredient.name}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Modal för detaljerad ingredienslista */}
       {showDetailedList && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-text">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                 Överblick
               </h3>
               <button
                 onClick={() => setShowDetailedList(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                className={buttonStyles.iconTransparentClose}
               >
-                <X className="w-5 h-5 text-text/60" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* View toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
+            <div className="flex bg-gray-100 rounded-lg p-1 mb-3">
               <button
                 onClick={() => setViewMode('recipe')}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`${buttonStyles.tab} ${
                   viewMode === 'recipe'
-                    ? 'bg-white text-text shadow-sm border border-gray-200'
-                    : 'text-text/60 hover:text-text hover:bg-gray-50'
+                    ? buttonStyles.tabActive
+                    : buttonStyles.tabInactive
                 }`}
               >
                 Veckans rätter
               </button>
               <button
                 onClick={() => setViewMode('shopping')}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`${buttonStyles.tab} ${
                   viewMode === 'shopping'
-                    ? 'bg-white text-text shadow-sm border border-gray-200'
-                    : 'text-text/60 hover:text-text hover:bg-gray-50'
+                    ? buttonStyles.tabActive
+                    : buttonStyles.tabInactive
                 }`}
               >
                 Inköpslista
@@ -217,26 +191,26 @@ const CommonIngredientsDisplay: React.FC = () => {
 
             {/* Portions-kontroll endast för Veckans rätter */}
             {viewMode === 'recipe' && (
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mb-3 p-2 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-text">
+                  <label className="text-sm font-medium text-gray-900">
                     Portioner per rätt:
                   </label>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handlePortionChange(portions - 1)}
                       disabled={portions <= 1}
-                      className="w-8 h-8 bg-white border border-gray-300 rounded-lg flex items-center justify-center text-text hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-7 h-7 bg-white border border-gray-300 rounded-lg flex items-center justify-center text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       -
                     </button>
-                    <span className="w-12 text-center font-medium text-text">
+                    <span className="w-10 text-center font-medium text-gray-900 text-sm">
                       {portions}
                     </span>
                     <button
                       onClick={() => handlePortionChange(portions + 1)}
                       disabled={portions >= 8}
-                      className="w-8 h-8 bg-white border border-gray-300 rounded-lg flex items-center justify-center text-text hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-7 h-7 bg-white border border-gray-300 rounded-lg flex items-center justify-center text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       +
                     </button>
@@ -253,11 +227,11 @@ const CommonIngredientsDisplay: React.FC = () => {
                   <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
                     <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-text text-sm">
+                        <h4 className="font-medium text-gray-900 text-sm">
                           {group.recipe.name}
                         </h4>
-                        <span className="text-xs text-text/60 bg-white px-2 py-1 rounded-full">
-                          {portions} portioner
+                        <span className="text-xs text-gray-600">
+                          {portions} port.
                         </span>
                       </div>
                     </div>
@@ -266,8 +240,8 @@ const CommonIngredientsDisplay: React.FC = () => {
                         const adjustedQuantity = Math.round(ingredient.quantity * (portions / 4) * 100) / 100
                         return (
                           <div key={ingIndex} className="flex items-center justify-between px-3 py-2">
-                            <span className="text-text text-sm">{ingredient.name}</span>
-                            <span className="text-text/60 text-sm">
+                            <span className="text-gray-900 text-sm">{ingredient.name}</span>
+                            <span className="text-gray-600 text-sm">
                               {adjustedQuantity} {ingredient.unit}
                             </span>
                           </div>
@@ -282,15 +256,15 @@ const CommonIngredientsDisplay: React.FC = () => {
               <div className="space-y-4 max-h-80 overflow-y-auto">
                 {Object.entries(getCategorizedIngredients()).map(([category, ingredients]) => (
                   <div key={category} className="border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="bg-blue-50 px-3 py-2 border-b border-gray-200">
-                      <h4 className="font-medium text-text text-sm">
+                    <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                      <h4 className="font-medium text-gray-900 text-sm">
                         {category}
                       </h4>
                     </div>
                     <div className="divide-y divide-gray-200">
                       {ingredients.map((ingredient, index) => (
                         <label key={index} className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                          checkedIngredients.has(ingredient.name) ? 'line-through text-text/40' : ''
+                          checkedIngredients.has(ingredient.name) ? 'line-through text-gray-400' : ''
                         }`}>
                           <div className="relative">
                             <input
@@ -299,20 +273,20 @@ const CommonIngredientsDisplay: React.FC = () => {
                               onChange={() => toggleIngredient(ingredient.name)}
                               className="sr-only"
                             />
-                            <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
+                            <div className={`${buttonStyles.checkbox} ${
                               checkedIngredients.has(ingredient.name)
-                                ? 'bg-blue-500 border-blue-500'
-                                : 'border-gray-300'
+                                ? buttonStyles.checkboxActive
+                                : buttonStyles.checkboxInactive
                             }`}>
                               {checkedIngredients.has(ingredient.name) && (
                                 <Check className="w-3 h-3 text-white" />
                               )}
                             </div>
                           </div>
-                          <div className="flex-1 font-medium text-text">
+                          <div className="flex-1 font-medium text-gray-900">
                             {ingredient.name}
                           </div>
-                          <div className="text-text text-sm">
+                          <div className="text-gray-900 text-sm">
                             {ingredient.totalQuantity} {ingredient.unit}
                           </div>
                         </label>
@@ -327,9 +301,13 @@ const CommonIngredientsDisplay: React.FC = () => {
             {viewMode === 'shopping' && (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="text-center text-sm">
-                  <span className="text-text/60">
-                    Kvar: {ingredientsWithQuantities.length - checkedIngredients.size} av {ingredientsWithQuantities.length}
-                  </span>
+                  {checkedIngredients.size >= ingredientsWithQuantities.length ? (
+                    <span className="text-gray-900 font-medium">Du har allt!</span>
+                  ) : (
+                    <span className="text-gray-600">
+                      Kvar: {ingredientsWithQuantities.length - checkedIngredients.size} av {ingredientsWithQuantities.length}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
