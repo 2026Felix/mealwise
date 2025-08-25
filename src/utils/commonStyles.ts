@@ -50,9 +50,9 @@ export const buttonStyles = {
   iconClose: 'p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100',
 
   // Ikon-knappar utan bakgrund (transparenta)
-  iconTransparent: 'p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 transition-colors touch-target flex items-center justify-center',
-  iconTransparentSmall: 'p-1 text-gray-600 hover:text-gray-900 transition-colors touch-target flex items-center justify-center',
-  iconTransparentClose: 'p-2 text-gray-400 hover:text-gray-600 transition-colors',
+  iconTransparent: 'p-1.5 sm:p-2 text-gray-600 hover:text-gray-900 hover:border hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 touch-target flex items-center justify-center rounded-lg',
+  iconTransparentSmall: 'p-1 text-gray-600 hover:text-gray-900 hover:border hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 touch-target flex items-center justify-center rounded-md',
+  iconTransparentClose: 'p-2 text-gray-400 hover:text-gray-600 hover:border hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 rounded-lg',
 
   // Tab-knappar
   tab: 'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',

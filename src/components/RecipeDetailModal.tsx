@@ -2,6 +2,7 @@ import { Recipe } from '../types'
 import { X, Clock, Users } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { buttonStyles } from '../utils/commonStyles'
+import { useScrollLock } from '../hooks/useScrollLock'
 
 interface RecipeDetailModalProps {
   recipe: Recipe
@@ -15,6 +16,9 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
   const [completedInstructions, setCompletedInstructions] = useState<Set<number>>(new Set())
   const [isWakeLockActive, setIsWakeLockActive] = useState(false)
   const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null)
+
+  // Lås scroll när modalen är öppen
+  useScrollLock(isOpen)
 
   // Hantera checkbox-klick
   const toggleIngredient = (ingredientName: string) => {

@@ -4,13 +4,30 @@ import { Brain, ChevronDown, ChevronUp } from 'lucide-react'
 import RecipeCard from './RecipeCard'
 import RecipeDetailModal from './RecipeDetailModal'
 import { buttonStyles } from '../utils/commonStyles'
+import { FilterType } from '../hooks/useRecipeFilters'
+import { useScrollLock } from '../hooks/useScrollLock'
 
-const SmartRecommendations: React.FC = memo(() => {
+interface SmartRecommendationsProps {
+  activeFilters: Set<FilterType>
+  onToggleFilter: (filter: FilterType) => void
+  onClearFilters: () => void
+  filterButtons: Array<{ key: FilterType; label: string; description: string }>
+}
+
+const SmartRecommendations: React.FC<SmartRecommendationsProps> = memo(({ 
+  activeFilters, 
+  onToggleFilter, 
+  onClearFilters, 
+  filterButtons 
+}) => {
   const { state, dispatch } = useRecipeContext()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null)
   const [showRecipeDetails, setShowRecipeDetails] = useState(false)
   const [showDaySelector, setShowDaySelector] = useState(false)
+
+  // Lås scroll när day selector modalen är öppen
+  useScrollLock(showDaySelector)
 
   // Beräkna smarta rekommendationer baserat på gemensamma ingredienser
   const recommendations = useMemo(() => {
@@ -27,7 +44,7 @@ const SmartRecommendations: React.FC = memo(() => {
     })
 
     // Hitta recept som delar ingredienser med planerade måltider
-    const recommendationsWithOverlap = state.recipeLibrary
+    let recommendationsWithOverlap = state.recipeLibrary
       .filter(recipe => {
         // Exkludera redan planerade recept
         const isAlreadyPlanned = state.weekPlan.some(day =>
@@ -51,8 +68,29 @@ const SmartRecommendations: React.FC = memo(() => {
       })
       .sort((a, b) => b.overlapCount - a.overlapCount) // Sortera efter mest överlapp
 
+    // Applicera filter på rekommendationer
+    if (activeFilters.size > 0) {
+      recommendationsWithOverlap = recommendationsWithOverlap.filter(recipe => {
+        // BILLIG - recept med färre ingredienser eller kortare tillagningstid
+        if (activeFilters.has('billig') && !(
+          recipe.ingredients.length <= 4 || recipe.prepTime <= 30
+        )) return false
+
+        // ENKEL - recept med låg svårighetsgrad
+        if (activeFilters.has('enkel') && recipe.difficulty !== 'easy') return false
+
+        // SNABB - recept med kort tillagningstid
+        if (activeFilters.has('snabb') && recipe.prepTime > 30) return false
+
+        // VEGETARISK - recept utan kött/fisk
+        if (activeFilters.has('vegetarisk') && recipe.category === 'protein') return false
+
+        return true
+      })
+    }
+
     return recommendationsWithOverlap
-  }, [state.weekPlan, state.recipeLibrary])
+  }, [state.weekPlan, state.recipeLibrary, activeFilters])
 
   const hasRecommendations = recommendations.length > 0
 

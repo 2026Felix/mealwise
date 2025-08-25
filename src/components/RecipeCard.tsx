@@ -97,7 +97,7 @@ const RecipeCard: React.FC<RecipeCardProps> = memo(({
 			onDragEnd={handleDragEnd}
 			onClick={handleClick}
 		>
-			<div className="flex items-center justify-between h-full">
+			<div className="flex items-center justify-between h-full relative z-10">
 				{/* Innehållssektion */}
 				<div className="flex-1 min-w-0 flex flex-col justify-center">
 					{/* Receptnamn */}
@@ -132,9 +132,9 @@ const RecipeCard: React.FC<RecipeCardProps> = memo(({
 				</div>
 			</div>
 
-			{/* Desktop drag-indikator */}
+			{/* Desktop drag-indikator - lägre z-index så den inte täcker texten */}
 			{!isMobile && (
-				<div className="absolute inset-0 bg-transparent group-hover:bg-gray-50 transition-colors rounded-lg pointer-events-none" />
+				<div className="absolute inset-0 bg-transparent group-hover:bg-gray-50 transition-colors rounded-lg pointer-events-none z-0" />
 			)}
 		</div>
 	)

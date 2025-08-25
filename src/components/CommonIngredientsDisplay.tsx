@@ -1,7 +1,8 @@
+import { useState, useMemo, useCallback } from 'react'
 import { useRecipeContext } from '../context/RecipeContext'
-import { useState } from 'react'
-import { ShoppingCart, X, Check } from 'lucide-react'
+import { ShoppingCart, X, Check, TrendingUp, TrendingDown } from 'lucide-react'
 import { buttonStyles } from '../utils/commonStyles'
+import { useScrollLock } from '../hooks/useScrollLock'
 
 const CommonIngredientsDisplay: React.FC = () => {
   const { getIngredientsWithQuantitiesFromContext, state } = useRecipeContext()
@@ -10,6 +11,9 @@ const CommonIngredientsDisplay: React.FC = () => {
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set())
   const [viewMode, setViewMode] = useState<'recipe' | 'shopping'>('shopping')
   const [portions, setPortions] = useState(4)
+
+  // Lås scroll när den detaljerade listan är öppen
+  useScrollLock(showDetailedList)
 
   // Beräkna ingredienser baserat på portions
   const ingredientsWithQuantities = baseIngredientsWithQuantities.map(ingredient => ({

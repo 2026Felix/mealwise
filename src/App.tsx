@@ -11,6 +11,7 @@ import { useState, useEffect, lazy, Suspense, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { commonClasses, responsiveText, textColors, spacing } from './utils/commonStyles'
 import { useRecipeFilters } from './hooks/useRecipeFilters'
+import { useScrollLock } from './hooks/useScrollLock'
 
 // Lazy load sidor som inte behövs direkt
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'))
@@ -21,6 +22,11 @@ const Feedback = lazy(() => import('./components/Feedback'))
 // Navigation Component
 const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Lås scroll när mobile menu är öppet
+  useScrollLock(isMobileMenuOpen)
+
   const location = useLocation()
 
   // Stäng mobilmenyn vid ruttbyte
@@ -220,7 +226,12 @@ const HomePage: React.FC = () => {
               />
             </div>
             <div data-onboarding="smart-recommendations">
-              <SmartRecommendations />
+              <SmartRecommendations 
+                activeFilters={activeFilters}
+                onToggleFilter={toggleFilter}
+                onClearFilters={clearFilters}
+                filterButtons={filterButtons}
+              />
             </div>
             <div data-onboarding="common-ingredients">
               <CommonIngredientsDisplay />
