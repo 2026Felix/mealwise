@@ -2,6 +2,7 @@ import WeekPlanner from './components/WeekPlanner'
 import Recipe from './components/Recipe'
 import IngredientsAndRecommendations from './components/IngredientsAndRecommendations'
 import RecipeFinder from './components/RecipeFinder'
+import RecipesPage from './components/RecipesPage'
 import { RecipeProvider } from './context/RecipeContext'
 
 import ErrorBoundary from './components/ErrorBoundary'
@@ -82,65 +83,36 @@ const BenefitCard: React.FC<BenefitCardProps> = ({ number, title, description })
   </div>
 )
 
-// Navigation Component
+// Navigation Component - Förenklad och förbättrad struktur
 const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isPlaneraDropdownOpen, setIsPlaneraDropdownOpen] = useState(false)
-  const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false)
+  const location = useLocation()
 
   // Lås scroll endast när mobile menu är öppet
   useScrollLock(isMobileMenuOpen)
 
-  const location = useLocation()
-
-  // Stäng alla menyer vid ruttbyte
+  // Stäng mobilmeny vid ruttbyte
   useEffect(() => {
     setIsMobileMenuOpen(false)
-    setIsPlaneraDropdownOpen(false)
-    setIsMobileToolsOpen(false)
   }, [location.pathname])
-
-  // Stäng dropdown när man klickar utanför
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isPlaneraDropdownOpen) {
-        const target = event.target as Element
-        if (!target.closest('.planera-dropdown')) {
-          setIsPlaneraDropdownOpen(false)
-        }
-      }
-    }
-
-    if (isPlaneraDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isPlaneraDropdownOpen])
-
 
   const toggleMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(v => !v)
-    // Stäng dropdown när mobilmenyn öppnas/stängs
-    if (!isMobileMenuOpen) {
-      setIsPlaneraDropdownOpen(false)
-    }
-  }, [isMobileMenuOpen])
+  }, [])
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false)
   }, [])
 
-  const togglePlaneraDropdown = useCallback(() => {
-    setIsPlaneraDropdownOpen(prev => !prev)
-  }, [])
+  // Navigation items - enkel lista utan dropdowns
+  const navigationItems = [
+    { to: '/plan', label: 'Veckoplan' },
+    { to: '/what-do-you-have', label: 'Hemmafix' },
+    { to: '/recipes', label: 'Recept' },
+    { to: '/feedback', label: 'Feedback' }
+  ]
 
-  const closePlaneraDropdown = useCallback(() => {
-    setIsPlaneraDropdownOpen(false)
-  }, [])
-
-  const toggleMobileTools = useCallback(() => {
-    setIsMobileToolsOpen(prev => !prev)
-  }, [])
+  const isActive = (path: string) => location.pathname === path
 
   return (
     <nav className="sticky top-0 z-50 bg-transparent relative">
@@ -156,204 +128,139 @@ const Navigation: React.FC = () => {
             </h1>
           </div>
           
-          {/* Navigation Links - centered */}
-          <div className="hidden md:flex items-center justify-center gap-8 lg:gap-10 flex-1">
-            {/* Planera Dropdown */}
-            <div className="relative planera-dropdown">
-              <button
-                onClick={togglePlaneraDropdown}
-                className={`${commonClasses.button.link} flex items-center gap-1`}
+          {/* Desktop Navigation - Höger-aligned för bättre balans */}
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive(item.to)
+                    ? 'bg-gray-900 text-white shadow-sm'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                }`}
               >
-                Verktyg
-                <svg 
-                  className={`w-4 h-4 transition-transform ${isPlaneraDropdownOpen ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              
-              {/* Dropdown Menu */}
-              {isPlaneraDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-[60] min-w-max">
-                  <div className="py-2">
-                    <Link
-                      to="/plan"
-                      onClick={closePlaneraDropdown}
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap ${
-                        location.pathname === '/plan' ? 'bg-blue-50 text-blue-700' : ''
-                      }`}
-                    >
-                      Veckoplan
-                    </Link>
-                    <Link
-                      to="/what-do-you-have"
-                      onClick={closePlaneraDropdown}
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap ${
-                        location.pathname === '/what-do-you-have' ? 'bg-blue-50 text-blue-700' : ''
-                      }`}
-                    >
-                      Vad har du hemma?
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <Link to="/recipes" className={commonClasses.button.link}>
-              Recept
-            </Link>
-            <Link to="/feedback" className={commonClasses.button.link}>
-              Feedback
-            </Link>
+                {item.label}
+              </Link>
+            ))}
           </div>
 
-          {/* Right-side utilities: Beta badge + mobile toggle */}
+          {/* Right side: Dark mode toggle + Mobile toggle */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden sm:inline px-3 py-1 text-sm font-semibold bg-gray-100 text-gray-800 rounded-full border border-gray-200">
-              BETA
-            </span>
-          <button
-            type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-900 hover:text-gray-700 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            aria-controls="mobile-menu"
-            aria-expanded={isMobileMenuOpen}
-            aria-label={isMobileMenuOpen ? 'Stäng meny' : 'Öppna meny'}
-            onClick={toggleMobileMenu}
-          >
-            {/* Animated hamburger icon */}
-            <label className="cursor-pointer">
-              <div className="w-9 h-10 flex flex-col items-center justify-center">
-                {/* hidden checkbox mirrors state for peer utility usage */}
-                <input
-                  className="hidden peer"
-                  type="checkbox"
-                  checked={isMobileMenuOpen}
-                  onChange={toggleMobileMenu}
-                  aria-hidden="true"
-                />
-                <div className="w-[50%] h-[2px] bg-gray-900 rounded-sm transition-all duration-300 origin-left translate-y-[0.45rem] peer-checked:-rotate-45"></div>
-                <div className="w-[50%] h-[2px] bg-gray-900 rounded-sm transition-all duration-300 origin-center peer-checked:hidden"></div>
-                <div className="w-[50%] h-[2px] bg-gray-900 rounded-sm transition-all duration-300 origin-left -translate-y-[0.45rem] peer-checked:rotate-45"></div>
-              </div>
-            </label>
-          </button>
-        </div>
-      </div>
-      </div>
-
-      {/* Mobile menu: slide-in from left (mirrored design) */}
-      <>
-        {/* Backdrop */}
-        <div
-          className={`md:hidden fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-[1px] transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-          onClick={closeMobileMenu}
-          aria-hidden="true"
-        ></div>
-        {/* Panel */}
-        <div
-          id="mobile-menu"
-          role="dialog"
-          aria-modal="true"
-          className={`md:hidden fixed inset-y-0 right-0 left-0 z-50 bg-white transform transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
-        >
-          <div className="h-full flex flex-col">
-            {/* Header with close button */}
-            <div className="flex items-center justify-end p-4">
-              <button
-                type="button"
-                aria-label="Stäng meny"
-                onClick={closeMobileMenu}
-                className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            {/* Dark mode toggle */}
+            <button
+              type="button"
+              className="hidden sm:inline-flex items-center justify-center p-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              aria-label="Växla mellan ljust och mörkt tema"
+              title="Dark mode kommer snart"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </button>
             
-            {/* Mobile Navigation Links */}
-            <nav className="flex-1 px-4 py-6">
-              <div className="space-y-0">
-                {/* Verktyg section */}
-                <div className="space-y-0">
-                  <button
-                    onClick={toggleMobileTools}
-                    className="flex items-center justify-between py-4 text-gray-900 hover:bg-gray-50 transition-colors text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 touch-target w-full"
-                  >
-                    <svg 
-                      className={`w-4 h-4 transition-transform ${isMobileToolsOpen ? 'rotate-180' : ''}`} 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                    <span className="text-right">Verktyg</span>
-                  </button>
-                  <div className="h-px bg-gray-200"></div>
-                  
-                  {/* Expandable tools submenu */}
-                  {isMobileToolsOpen && (
-                    <div className="pl-4 space-y-0">
-                      <Link 
-                        to="/plan" 
-                        className={`flex items-center justify-between py-3 text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 touch-target ${location.pathname === '/plan' ? 'bg-blue-50 text-blue-700' : ''}`}
-                        onClick={closeMobileMenu}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                        <span className="text-right">Veckoplan</span>
-                      </Link>
-                      <div className="h-px bg-gray-200"></div>
-                      
-                      <Link 
-                        to="/what-do-you-have" 
-                        className={`flex items-center justify-between py-3 text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 touch-target ${location.pathname === '/what-do-you-have' ? 'bg-blue-50 text-blue-700' : ''}`}
-                        onClick={closeMobileMenu}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                        <span className="text-right">Vad har du hemma?</span>
-                      </Link>
-                      <div className="h-px bg-gray-200"></div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Recept */}
-                <Link 
-                  to="/recipes" 
-                  className={`flex items-center justify-between py-4 text-gray-900 hover:bg-gray-50 transition-colors text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 touch-target ${location.pathname === '/recipes' ? 'bg-blue-50 text-blue-700' : ''}`}
-                  onClick={closeMobileMenu}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                  <span className="text-right">Recept</span>
-                </Link>
-                <div className="h-px bg-gray-200"></div>
-                
-                {/* Feedback */}
-                <Link 
-                  to="/feedback" 
-                  className={`flex items-center justify-between py-4 text-gray-900 hover:bg-gray-50 transition-colors text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 touch-target ${location.pathname === '/feedback' ? 'bg-blue-50 text-blue-700' : ''}`}
-                  onClick={closeMobileMenu}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                  <span className="text-right">Feedback</span>
-                </Link>
+            {/* Mobile toggle */}
+            <button
+              type="button"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-900 hover:text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              aria-controls="mobile-menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-label={isMobileMenuOpen ? 'Stäng meny' : 'Öppna meny'}
+              onClick={toggleMobileMenu}
+            >
+              {/* Förenklad hamburger icon */}
+              <div className="w-6 h-6 flex flex-col items-center justify-center gap-1">
+                <div className={`w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''}`}></div>
+                <div className={`w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
+                <div className={`w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''}`}></div>
               </div>
-            </nav>
+            </button>
           </div>
         </div>
-      </>
+      </div>
+
+      {/* Mobile menu - Förenklad slide-in från höger */}
+      {isMobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="md:hidden fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm"
+            onClick={closeMobileMenu}
+            aria-hidden="true"
+          />
+          
+          {/* Panel */}
+          <div
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            className="md:hidden fixed inset-y-0 right-0 z-50 w-80 max-w-[85vw] bg-white shadow-2xl transform transition-transform duration-300 ease-out"
+          >
+            <div className="h-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Meny</h2>
+                <button
+                  type="button"
+                  aria-label="Stäng meny"
+                  onClick={closeMobileMenu}
+                  className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Navigation Links - Förenklad lista */}
+              <nav className="flex-1 p-6">
+                <div className="space-y-2">
+                  {navigationItems.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={closeMobileMenu}
+                      className={`flex items-center justify-between px-4 py-4 rounded-xl text-base font-medium transition-all duration-200 ${
+                        isActive(item.to)
+                          ? 'bg-gray-900 text-white shadow-sm'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {isActive(item.to) && (
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </nav>
+
+              {/* Footer med dark mode toggle */}
+              <div className="p-6 border-t border-gray-200">
+                <div className="flex justify-center mb-4">
+                  <button
+                    type="button"
+                    className="p-3 rounded-xl text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                    aria-label="Växla mellan ljust och mörkt tema"
+                    title="Dark mode kommer snart"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-500">
+                    © 2025 Mealwise
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </nav>
   )
 }
@@ -430,9 +337,6 @@ const HomePage: React.FC = () => {
               >
                 Spännande, vi kör!
               </button>
-              <Link to="/what-do-you-have" className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-gray-300 text-gray-900 text-sm sm:text-base hover:bg-gray-50 transition-colors w-full sm:w-auto">
-                Läs mer
-              </Link>
             </div>
           </div>
 
@@ -460,7 +364,7 @@ const HomePage: React.FC = () => {
             />
             <ToolCard 
               to="/what-do-you-have"
-              title="Vad har du hemma?"
+              title="Hemmafix"
               description="Välj ingredienser du har hemma och få recept som matchar."
               ctaText="Öppna verktyg"
             />
@@ -568,15 +472,7 @@ function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/recipes" element={
-                  <div className={`${commonClasses.container} ${spacing.section}`}>
-                    <div className="py-6 sm:py-8 lg:py-10">
-                      <h1 className={`${responsiveText.h2} font-semibold text-gray-900 mb-4`}>Recept</h1>
-                      <p className="text-gray-600">Här kommer alla recept i kortform.
-                      </p>
-                    </div>
-                  </div>
-                } />
+                <Route path="/recipes" element={<RecipesPage />} />
                 
                 <Route path="/what-do-you-have" element={
                   <div className={`${commonClasses.container} ${spacing.section}`}>
