@@ -6,6 +6,7 @@ import { useEffect } from 'react'
  */
 export const useScrollLock = (isLocked: boolean) => {
   useEffect(() => {
+    // Alltid anropa hooken, men hantera logiken internt
     if (isLocked) {
       // Spara ursprunglig scroll-position
       const scrollY = window.scrollY
@@ -25,6 +26,11 @@ export const useScrollLock = (isLocked: boolean) => {
         
         // Återställ scroll-position
         window.scrollTo(0, scrollY)
+      }
+    } else {
+      // Om inte låst, se till att scroll är återställd
+      return () => {
+        // Inget att göra när inte låst
       }
     }
   }, [isLocked])

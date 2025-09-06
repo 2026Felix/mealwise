@@ -204,6 +204,7 @@ const RecipeContext = createContext<{
   generateSuggestions: () => void
   getCommonIngredientsFromContext: () => string[]
   getIngredientsWithQuantitiesFromContext: () => Array<{name: string, totalQuantity: number, unit: string}>
+  getPlannedIngredientsFromContext: () => Set<string>
 } | null>(null)
 
 export const RecipeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -221,17 +222,31 @@ export const RecipeProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     return getIngredientsWithQuantities(state.weekPlan.flatMap(day => day.recipes))
   }, [state.weekPlan])
 
+  const getPlannedIngredientsFromContext = useCallback(() => {
+    const planned = new Set<string>()
+    state.weekPlan.forEach(day => {
+      day.recipes.forEach(meal => {
+        meal.recipe.ingredients.forEach(ingredient => {
+          planned.add(ingredient.name.toLowerCase())
+        })
+      })
+    })
+    return planned
+  }, [state.weekPlan])
+
   const contextValue = useMemo(() => ({
     state,
     dispatch,
     generateSuggestions,
     getCommonIngredientsFromContext,
-    getIngredientsWithQuantitiesFromContext
+    getIngredientsWithQuantitiesFromContext,
+    getPlannedIngredientsFromContext
   }), [
     state,
     generateSuggestions,
     getCommonIngredientsFromContext,
-    getIngredientsWithQuantitiesFromContext
+    getIngredientsWithQuantitiesFromContext,
+    getPlannedIngredientsFromContext
   ])
 
   return (

@@ -26,7 +26,7 @@ export const commonClasses = {
   },
   card: 'bg-white border border-gray-200 rounded-lg p-4',
   input: 'w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent text-sm transition-colors duration-200',
-  container: 'w-[95%] sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto',
+  container: 'w-[92%] sm:w-[88%] md:w-[85%] lg:w-[80%] mx-auto',
   loading: {
     spinner: 'animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4',
     container: 'min-h-screen flex items-center justify-center',
@@ -108,7 +108,7 @@ export const responsiveText = {
 } as const
 
 export const spacing = {
-  section: 'mt-8 sm:mt-12 md:mt-16',
+  section: 'mt-6 sm:mt-8 md:mt-12 lg:mt-16',
   content: 'p-3 sm:p-4 md:p-6',
   gap: 'gap-4 sm:gap-6 md:gap-8'
 } as const

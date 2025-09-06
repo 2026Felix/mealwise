@@ -1,11 +1,11 @@
-import { Recipe } from '../types'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Clock, Users } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Recipe as RecipeType } from '../types'
 import { buttonStyles } from '../utils/commonStyles'
 import { useScrollLock } from '../hooks/useScrollLock'
 
 interface RecipeDetailModalProps {
-  recipe: Recipe
+  recipe: RecipeType
   isOpen: boolean
   onClose: () => void
 }
@@ -90,6 +90,13 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
                 src={recipe.image} 
                 alt={recipe.name}
                 className="w-full h-full object-cover opacity-20"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  // Fallback om bilden inte kan laddas
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                }}
               />
             </div>
           )}
@@ -318,71 +325,96 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
                     
                     {/* Tabell rader */}
                     <div className="divide-y divide-gray-200">
+                      {/* Kalorier */}
+                      <div className="flex items-center px-4 py-3">
+                        <div className="flex-1 text-sm text-gray-900">Kalorier</div>
+                        <div className="w-24 text-center text-sm text-gray-600">
+                          {Math.round((recipe.nutrition.calories / 2000) * 100)}%
+                        </div>
+                        <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                          {recipe.nutrition.calories} kcal
+                        </div>
+                      </div>
+                      
+                      {/* Protein */}
+                      <div className="flex items-center px-4 py-3">
+                        <div className="flex-1 text-sm text-gray-900">Protein</div>
+                        <div className="w-24 text-center text-sm text-gray-600">
+                          {Math.round((recipe.nutrition.protein / 50) * 100)}%
+                        </div>
+                        <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                          {recipe.nutrition.protein}g
+                        </div>
+                      </div>
+                      
+                      {/* Kolhydrater */}
+                      <div className="flex items-center px-4 py-3">
+                        <div className="flex-1 text-sm text-gray-900">Kolhydrater</div>
+                        <div className="w-24 text-center text-sm text-gray-600">
+                          {Math.round((recipe.nutrition.carbs / 275) * 100)}%
+                        </div>
+                        <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                          {recipe.nutrition.carbs}g
+                        </div>
+                      </div>
+                      
+                      {/* Fett */}
+                      <div className="flex items-center px-4 py-3">
+                        <div className="flex-1 text-sm text-gray-900">Fett</div>
+                        <div className="w-24 text-center text-sm text-gray-600">
+                          {Math.round((recipe.nutrition.fat / 55) * 100)}%
+                        </div>
+                        <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                          {recipe.nutrition.fat}g
+                        </div>
+                      </div>
+                      
+                      {/* Fiber (om tillgängligt) */}
                       {recipe.nutrition.fiber && (
-                        <div className="px-4 py-3">
-                          <div className="flex">
-                            <div className="flex-1 text-sm text-gray-900">Fiber</div>
-                            <div className="w-24 text-sm text-gray-900 text-center">-</div>
-                            <div className="w-32 text-sm text-gray-900 text-right">{recipe.nutrition.fiber}g</div>
+                        <div className="flex items-center px-4 py-3">
+                          <div className="flex-1 text-sm text-gray-900">Fiber</div>
+                          <div className="w-24 text-center text-sm text-gray-600">
+                            {Math.round((recipe.nutrition.fiber / 28) * 100)}%
+                          </div>
+                          <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                            {recipe.nutrition.fiber}g
                           </div>
                         </div>
                       )}
                       
-                      <div className="px-4 py-3">
-                        <div className="flex">
-                          <div className="flex-1 text-sm text-gray-900">Protein</div>
-                          <div className="w-24 text-sm text-gray-900 text-center">
-                            {Math.round((recipe.nutrition.protein * 4 / recipe.nutrition.calories) * 100)}%
-                          </div>
-                          <div className="w-32 text-sm text-gray-900 text-right">{recipe.nutrition.protein}g</div>
-                        </div>
-                      </div>
-                      
-                      <div className="px-4 py-3">
-                        <div className="flex">
-                          <div className="flex-1 text-sm text-gray-900">Fett</div>
-                          <div className="w-24 text-sm text-gray-900 text-center">
-                            {Math.round((recipe.nutrition.fat * 9 / recipe.nutrition.calories) * 100)}%
-                          </div>
-                          <div className="w-32 text-sm text-gray-900 text-right">{recipe.nutrition.fat}g</div>
-                        </div>
-                      </div>
-                      
-                      <div className="px-4 py-3">
-                        <div className="flex">
-                          <div className="flex-1 text-sm text-gray-900">Kolhydrater</div>
-                          <div className="w-24 text-sm text-gray-900 text-center">
-                            {Math.round((recipe.nutrition.carbs * 4 / recipe.nutrition.calories) * 100)}%
-                          </div>
-                          <div className="w-32 text-sm text-gray-900 text-right">{recipe.nutrition.carbs}g</div>
-                        </div>
-                      </div>
-                      
+                      {/* Socker (om tillgängligt) */}
                       {recipe.nutrition.sugar && (
-                        <div className="px-4 py-3">
-                          <div className="flex">
-                            <div className="flex-1 text-sm text-gray-900">Socker</div>
-                            <div className="w-24 text-sm text-gray-900 text-center">-</div>
-                            <div className="w-32 text-sm text-gray-900 text-right">{recipe.nutrition.sugar}g</div>
+                        <div className="flex items-center px-4 py-3">
+                          <div className="flex-1 text-sm text-gray-900">Socker</div>
+                          <div className="w-24 text-center text-sm text-gray-600">
+                            {Math.round((recipe.nutrition.sugar / 50) * 100)}%
+                          </div>
+                          <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                            {recipe.nutrition.sugar}g
                           </div>
                         </div>
                       )}
                       
+                      {/* Natrium (om tillgängligt) */}
                       {recipe.nutrition.sodium && (
-                        <div className="px-4 py-3">
-                          <div className="flex">
-                            <div className="flex-1 text-sm text-gray-900">Natrium</div>
-                            <div className="w-24 text-sm text-gray-900 text-center">-</div>
-                            <div className="w-32 text-sm text-gray-900 text-right">{recipe.nutrition.sodium}mg</div>
+                        <div className="flex items-center px-4 py-3">
+                          <div className="flex-1 text-sm text-gray-900">Natrium</div>
+                          <div className="w-24 text-center text-sm text-gray-600">
+                            {Math.round((recipe.nutrition.sodium / 2300) * 100)}%
+                          </div>
+                          <div className="w-32 text-right text-sm text-gray-900 font-medium">
+                            {recipe.nutrition.sodium}mg
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
+                  
+                  
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-600">
-                  Näringsvärden är inte tillgängliga för detta recept.
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Inga näringsvärden tillgängliga för detta recept.</p>
                 </div>
               )}
             </div>
