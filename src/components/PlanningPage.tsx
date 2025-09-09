@@ -910,7 +910,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
       {/* Modal för detaljerad ingredienslista */}
       {showDetailedList && (
         <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[95vh] sm:max-h-[95vh] overflow-y-auto shadow-2xl sm:shadow-2xl">
+          <div className="bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[85vh] sm:h-[90vh] overflow-y-auto shadow-2xl sm:shadow-2xl">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -1078,7 +1078,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
       {/* Modal för att välja dag */}
       {showDaySelector && selectedRecipe && (
         <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[95vh] sm:max-h-[95vh] overflow-hidden shadow-2xl sm:shadow-2xl">
+          <div className="bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[85vh] sm:h-[90vh] overflow-hidden shadow-2xl sm:shadow-2xl">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-normal text-gray-600">Välj dag för:</span>

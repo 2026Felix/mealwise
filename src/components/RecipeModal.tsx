@@ -80,130 +80,99 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto modal-container">
-      <div className="bg-white rounded-t-xl sm:rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl sm:shadow-2xl modal-safe-area" style={{ 
-        maxHeight: '90vh'
-      }}>
-        {/* Header */}
-        <div className="relative p-6 modal-header">
-          {/* Bakgrundsbild om den finns */}
-          {recipe.image && (
-            <div className="absolute inset-0 rounded-t-xl overflow-hidden">
-              <img 
-                src={recipe.image} 
-                alt={recipe.name}
-                className="w-full h-full object-cover opacity-20"
-                loading="lazy"
-                decoding="async"
-                onError={(e) => {
-                  // Fallback om bilden inte kan laddas
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                }}
-              />
-            </div>
-          )}
-          
-          <div className="relative z-10">
-            {/* Skärmvakning-knapp - vänstra hörnet */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={toggleWakeLock}
-                  className={`toggle-switch relative inline-flex h-6 w-12 min-w-[48px] min-h-[24px] items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
-                    isWakeLockActive ? 'bg-gray-600' : 'bg-gray-300'
-                  }`}
-                  title={isWakeLockActive ? 'Stäng av skärmvakning' : 'Aktivera skärmvakning'}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ease-in-out shadow-md ${
-                      isWakeLockActive ? 'translate-x-6' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
-                <span className="text-sm font-medium text-gray-700">
-                  Håll skärmen tänd
-                </span>
-              </div>
-              
-              {/* Stäng-knapp - högra hörnet */}
+    <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-t-xl sm:rounded-xl max-w-4xl w-full h-[85vh] sm:h-[90vh] overflow-y-auto shadow-2xl sm:shadow-2xl">
+        <div className="p-6">
+          {/* Header med kontroller */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
-                className={buttonStyles.iconTransparentClose}
-                title="Stäng"
+                onClick={toggleWakeLock}
+                className={`toggle-switch relative inline-flex h-6 w-12 min-w-[48px] min-h-[24px] items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+                  isWakeLockActive ? 'bg-gray-600' : 'bg-gray-300'
+                }`}
+                title={isWakeLockActive ? 'Stäng av skärmvakning' : 'Aktivera skärmvakning'}
               >
-                <X className="w-5 h-5" />
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ease-in-out shadow-md ${
+                    isWakeLockActive ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}
+                />
               </button>
+              <span className="text-sm font-medium text-gray-700">
+                Håll skärmen tänd
+              </span>
             </div>
             
-            {/* Innehåll flyttat ner */}
-            <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-                {recipe.name}
-              </h1>
-              
-              {/* Metadata centrerat direkt under titeln */}
-              <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mb-4">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5" />
-                  <span>{recipe.totalTime} min</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5" />
-                  <span>{recipe.servings} portioner</span>
-                </div>
+            <button
+              onClick={onClose}
+              className={buttonStyles.iconTransparentClose}
+              title="Stäng"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Recepttitel */}
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+            {recipe.name}
+          </h1>
+          
+          {/* Metadata */}
+          <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5" />
+              <span>{recipe.totalTime} min</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5" />
+              <span>{recipe.servings} portioner</span>
+            </div>
+          </div>
+          
+          {recipe.description && (
+            <p className="text-gray-700 text-lg mb-4">
+              {recipe.description}
+            </p>
+          )}
+
+          {/* Taggar */}
+          {normalizeRecipeTags(recipe.tags).length > 0 && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
+                {normalizeRecipeTags(recipe.tags).map((tag, index) => (
+                  <span
+                    key={index}
+                    className={buttonStyles.filterTag}
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
-              
-              {recipe.description && (
-                <p className="text-gray-700 text-lg mb-4 max-w-2xl text-left">
-                  {recipe.description}
-                </p>
-              )}
-
-              {/* Normaliserade taggar (endast tillåtna) */}
-              {normalizeRecipeTags(recipe.tags).length > 0 && (
-                <div className="mb-4">
-                  <div className="flex flex-wrap gap-2">
-                    {normalizeRecipeTags(recipe.tags).map((tag, index) => (
-                      <span
-                        key={index}
-                        className={buttonStyles.filterTag}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Tabs */}
-        <div className="px-4">
-          <div className="flex overflow-x-auto">
-            <div className="flex bg-gray-100 rounded-lg p-1 min-w-full mb-2">
-              {[
-                { key: 'ingredients', label: 'Ingredienser' },
-                { key: 'instructions', label: 'Instruktioner' },
-                { key: 'nutrition', label: 'Näring' }
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
-                  className={`${buttonStyles.tab} ${
-                    activeTab === tab.key ? buttonStyles.tabActive : buttonStyles.tabInactive
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          {/* Tabs */}
+          <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
+            {[
+              { key: 'ingredients', label: 'Ingredienser' },
+              { key: 'instructions', label: 'Instruktioner' },
+              { key: 'nutrition', label: 'Näring' }
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`${buttonStyles.tab} ${
+                  activeTab === tab.key ? buttonStyles.tabActive : buttonStyles.tabInactive
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Innehåll - förbättrad mobil scroll */}
-        <div className="px-4 pt-1 pb-4 overflow-y-auto max-h-[60vh] w-full overscroll-contain touch-scroll scroll-indicator" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {/* Innehåll */}
+          <div className="pt-0 pb-4 w-full">
           {activeTab === 'ingredients' && (
             <div>
               {/* Ingredienslista */}
@@ -422,6 +391,7 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>

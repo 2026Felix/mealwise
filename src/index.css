@@ -415,7 +415,7 @@
   .modal-safe-area {
     margin-top: max(1rem, env(safe-area-inset-top, 0px));
     margin-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-    height: calc(90vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    min-height: calc(90vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -424,7 +424,7 @@
   .modal-safe-area {
     margin-top: 1rem;
     margin-bottom: 1rem;
-    height: 90vh;
+    min-height: 90vh;
   }
 }
 
