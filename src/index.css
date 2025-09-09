@@ -410,4 +410,46 @@
   }
 }
 
+/* Safe area handling for mobile modals */
+@supports (padding: max(0px)) {
+  .modal-safe-area {
+    margin-top: max(1rem, env(safe-area-inset-top, 0px));
+    margin-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem);
+  }
+}
+
+/* Fallback for browsers that don't support env() */
+@supports not (padding: max(0px)) {
+  .modal-safe-area {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    height: calc(100vh - 2rem);
+  }
+}
+
+/* Additional mobile modal improvements */
+@media (max-width: 768px) {
+  .modal-safe-area {
+    /* Ensure modal doesn't get cut off by browser UI */
+    min-height: 0;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  /* Better positioning for mobile */
+  .modal-container {
+    align-items: flex-end;
+    padding: 0;
+  }
+  
+  /* Ensure header is always visible */
+  .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
+
 
