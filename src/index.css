@@ -415,7 +415,7 @@
   .modal-safe-area {
     margin-top: max(1rem, env(safe-area-inset-top, 0px));
     margin-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-    height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem);
+    height: calc(90vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -424,7 +424,7 @@
   .modal-safe-area {
     margin-top: 1rem;
     margin-bottom: 1rem;
-    height: calc(100vh - 2rem);
+    height: 90vh;
   }
 }
 
@@ -433,7 +433,7 @@
   .modal-safe-area {
     /* Ensure modal doesn't get cut off by browser UI */
     min-height: 0;
-    max-height: calc(100vh - 2rem);
+    max-height: 85vh;
   }
   
   /* Better positioning for mobile */

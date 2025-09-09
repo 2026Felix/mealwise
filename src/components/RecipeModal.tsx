@@ -82,7 +82,7 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
   return (
     <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto modal-container">
       <div className="bg-white rounded-t-xl sm:rounded-xl max-w-4xl w-full overflow-hidden shadow-2xl sm:shadow-2xl modal-safe-area" style={{ 
-        maxHeight: '95vh'
+        maxHeight: '90vh'
       }}>
         {/* Header */}
         <div className="relative p-6 modal-header">
