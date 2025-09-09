@@ -1,15 +1,19 @@
 import { useState, useMemo } from 'react'
-import { useRecipeContext } from '../context/RecipeContext'
-import { useRecipeFilters } from '../hooks/useRecipeFilters'
-import { commonClasses, responsiveText, spacing, buttonStyles } from '../utils/commonStyles'
-import { sanitizeUserInput } from '../utils/security'
-import { Search } from 'lucide-react'
+import { useRecipeContext } from '../context/AppState'
+import { useRecipeFilters } from '../hooks/useFiltering'
+import { commonClasses, responsiveText, spacing, buttonStyles } from '../utils/uiStyles'
+import { sanitizeUserInput } from '../utils/validation'
+import { Search, ImageOff, Users } from 'lucide-react'
+import RecipeModal from './RecipeModal'
+import type { Recipe } from '../types'
 
 const RecipesPage: React.FC = () => {
   const { state } = useRecipeContext()
   const { activeFilters, toggleFilter, clearFilters, filterButtons } = useRecipeFilters()
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(12) // Visa 12 recept initialt
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   
   // Filtrera recept baserat på sökfältet och aktiva filter
   const filteredRecipes = useMemo(() => {
@@ -31,19 +35,20 @@ const RecipesPage: React.FC = () => {
     // Filter-logik
     if (activeFilters.size > 0) {
       recipes = recipes.filter(recipe => {
-        // BILLIG - recept med färre ingredienser eller kortare tillagningstid
-        if (activeFilters.has('billig') && !(
-          recipe.ingredients.length <= 4 || recipe.prepTime <= 30
-        )) return false
-
-        // ENKEL - recept med låg svårighetsgrad
-        if (activeFilters.has('enkel') && recipe.difficulty !== 'easy') return false
-
-        // SNABB - recept med kort tillagningstid
+        // SNABB - heuristik: prepTime <= 30
         if (activeFilters.has('snabb') && recipe.prepTime > 30) return false
 
         // VEGETARISK - recept utan kött/fisk
         if (activeFilters.has('vegetarisk') && recipe.category === 'protein') return false
+
+        // VEGANSK - kräver tagg eftersom vi inte härleder från ingredienser
+        if (activeFilters.has('vegansk') && !(recipe.tags?.includes('Vegansk'))) return false
+
+        // VARDAGSMIDDAG - kräver tagg
+        if (activeFilters.has('vardagsmiddag') && !(recipe.tags?.includes('Vardagsmiddag'))) return false
+
+        // FEST - kräver tagg
+        if (activeFilters.has('fest') && !(recipe.tags?.includes('Fest'))) return false
 
         return true
       })
@@ -58,6 +63,16 @@ const RecipesPage: React.FC = () => {
 
   const loadMore = () => {
     setVisibleCount(prev => Math.min(prev + 12, totalRecipes))
+  }
+
+  const openRecipeModal = (recipe: Recipe) => {
+    setSelectedRecipe(recipe)
+    setIsModalOpen(true)
+  }
+
+  const closeRecipeModal = () => {
+    setIsModalOpen(false)
+    setSelectedRecipe(null)
   }
 
   return (
@@ -75,13 +90,13 @@ const RecipesPage: React.FC = () => {
             {/* Sökfält */}
             <div className="mb-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search aria-hidden="true" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="search"
                   placeholder="Sök recept eller ingredienser..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value.slice(0, 50))}
-                  className={commonClasses.input}
+                  className={`${commonClasses.input} pl-9`}
                   maxLength={50}
                   aria-label="Sök recept eller ingredienser"
                 />
@@ -148,17 +163,49 @@ const RecipesPage: React.FC = () => {
         ) : (
           <>
             {/* Receptkort grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-4 gap-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-4 gap-x-5 gap-y-10">
           {visibleRecipes.map((recipe) => (
-            <div key={recipe.id} className="cursor-pointer">
-              {/* Bild placeholder */}
+            <div
+              key={recipe.id}
+              className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-lg"
+              role="button"
+              tabIndex={0}
+              aria-label={`Öppna ${recipe.name}`}
+              onClick={() => openRecipeModal(recipe)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  openRecipeModal(recipe)
+                }
+              }}
+            >
+              {/* Bild / Placeholder */}
               <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="aspect-[3/4] bg-gray-200"></div>
+                <div className="aspect-[3/4] bg-gray-200 relative">
+                  {recipe.image && (
+                    <img
+                      src={recipe.image}
+                      alt={recipe.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
+                    />
+                  )}
+                  {!recipe.image && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ImageOff aria-hidden="true" className="w-7 h-7 text-gray-400" />
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Recept info - utanför kortet */}
               <div className="mt-2">
-                <div className="text-xs font-semibold text-gray-900 mb-1">
+                <div className="text-xs font-semibold text-gray-900 mb-2">
                   {recipe.totalTime} MIN
                 </div>
                 <div className="text-base font-semibold text-gray-900 leading-tight">
@@ -181,6 +228,13 @@ const RecipesPage: React.FC = () => {
               </div>
             )}
           </>
+        )}
+        {selectedRecipe && (
+          <RecipeModal
+            recipe={selectedRecipe}
+            isOpen={isModalOpen}
+            onClose={closeRecipeModal}
+          />
         )}
       </div>
     </div>

@@ -1,18 +1,15 @@
-import WeekPlanner from './components/WeekPlanner'
-import Recipe from './components/Recipe'
-import IngredientsAndRecommendations from './components/IngredientsAndRecommendations'
-import RecipeFinder from './components/RecipeFinder'
-import RecipesPage from './components/RecipesPage'
-import { RecipeProvider } from './context/RecipeContext'
+import PlanningPage from './components/PlanningPage'
+import RecipeSearch from './components/RecipeSearch'
+import RecipeLibrary from './components/RecipeLibrary'
+import { RecipeProvider } from './context/AppState'
 
 import ErrorBoundary from './components/ErrorBoundary'
 
-import DebugPanel from './components/DebugPanel'
 import { useState, useEffect, lazy, Suspense, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
-import { commonClasses, responsiveText, textColors, spacing } from './utils/commonStyles'
-import { useRecipeFilters } from './hooks/useRecipeFilters'
-import { useScrollLock } from './hooks/useScrollLock'
+import { commonClasses, responsiveText, textColors, spacing } from './utils/uiStyles'
+import { useRecipeFilters } from './hooks/useFiltering'
+import { useScrollLock } from './hooks/useScrollControl'
 
 // Lazy load sidor som inte behövs direkt
 const Legal = lazy(() => import('./components/Legal'))
@@ -266,7 +263,7 @@ const Navigation: React.FC = () => {
 }
 
 // Planning Page Component
-const PlanningPage: React.FC = () => {
+const PlanningPageWrapper: React.FC = () => {
   const { 
     activeFilters, 
     toggleFilter, 
@@ -275,31 +272,12 @@ const PlanningPage: React.FC = () => {
   } = useRecipeFilters()
 
   return (
-      <main id="main-content" className={`${commonClasses.container} ${spacing.content} ${spacing.section}`}>
-        <div className={`flex flex-col xl:grid xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8`}>
-          <div data-onboarding="week-planner" className="order-1 xl:order-1">
-            <WeekPlanner />
-          </div>
-          <div className="space-y-4 sm:space-y-6 order-2 xl:order-2">
-            <div data-onboarding="recipe-library">
-              <Recipe 
-                activeFilters={activeFilters}
-                onToggleFilter={toggleFilter}
-                onClearFilters={clearFilters}
-                filterButtons={filterButtons}
-              />
-            </div>
-            <div data-onboarding="ingredients-and-recommendations">
-              <IngredientsAndRecommendations 
-                activeFilters={activeFilters}
-                onToggleFilter={toggleFilter}
-                onClearFilters={clearFilters}
-                filterButtons={filterButtons}
-              />
-            </div>
-          </div>
-        </div>
-      </main>
+    <PlanningPage 
+      activeFilters={activeFilters}
+      onToggleFilter={toggleFilter}
+      onClearFilters={clearFilters}
+      filterButtons={filterButtons}
+    />
   )
 }
 
@@ -448,19 +426,6 @@ const Footer: React.FC = () => {
 
 // Main App Component with Providers
 function App() {
-  const [showDebugPanel, setShowDebugPanel] = useState(false)
-
-  // Dev-only genväg för att toggla Debug Panel
-  useEffect(() => {
-    if (!import.meta.env.DEV) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && (e.key === 'D' || e.key === 'd')) {
-        setShowDebugPanel((v) => !v)
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
 
   return (
     <ErrorBoundary>
@@ -472,17 +437,17 @@ function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/recipes" element={<RecipesPage />} />
+                <Route path="/recipes" element={<RecipeLibrary />} />
                 
                 <Route path="/what-do-you-have" element={
                   <div className={`${commonClasses.container} ${spacing.section}`}>
                     <div className="py-6 sm:py-8 lg:py-10">
-                      <RecipeFinder />
+                      <RecipeSearch />
                     </div>
                   </div>
                 } />
                 <Route path="/plan" element={
-                  <PlanningPage />
+                  <PlanningPageWrapper />
                 } />
                 <Route path="/legal" element={
                   <Suspense fallback={
@@ -513,14 +478,6 @@ function App() {
             </main>
             
             <Footer />
-
-            {/* Debug Panel endast i utvecklingsläge (Shift+D för att toggla) */}
-            {import.meta.env.DEV && (
-              <DebugPanel
-                isVisible={showDebugPanel}
-                onToggle={() => setShowDebugPanel(!showDebugPanel)}
-              />
-            )}
           </div>
         </BrowserRouter>
       </RecipeProvider>

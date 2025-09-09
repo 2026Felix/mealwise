@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
-// Filter-typer
-export type FilterType = 'billig' | 'enkel' | 'snabb' | 'vegetarisk'
+// Centrala filter baserade på tillåtna taggar
+// Exakt fem: Vegetarisk, Vegansk, Snabb, Vardagsmiddag, Fest
+export type FilterType = 'vegetarisk' | 'vegansk' | 'snabb' | 'vardagsmiddag' | 'fest'
 
 export const useRecipeFilters = () => {
   const [activeFilters, setActiveFilters] = useState<Set<FilterType>>(new Set())
@@ -22,12 +23,13 @@ export const useRecipeFilters = () => {
     setActiveFilters(new Set())
   }
 
-  // Filter-knappar konfiguration
+  // Filter-knappar konfiguration (matchar tillåtna taggar)
   const filterButtons: Array<{ key: FilterType; label: string; description: string }> = [
-    { key: 'billig', label: 'BILLIG', description: 'Få ingredienser, snabbt' },
-    { key: 'enkel', label: 'ENKEL', description: 'Lätt att tillaga' },
-    { key: 'snabb', label: 'SNABB', description: 'Under 30 min' },
-    { key: 'vegetarisk', label: 'VEGETARISK', description: 'Inget kött eller fisk' }
+    { key: 'vegetarisk', label: 'VEGETARISK', description: 'Inget kött eller fisk' },
+    { key: 'vegansk', label: 'VEGANSK', description: 'Helt växtbaserat' },
+    { key: 'snabb', label: 'SNABB', description: 'Snabb vardagsmat' },
+    { key: 'vardagsmiddag', label: 'VARDAGSMIDDAG', description: 'Passar vardagen' },
+    { key: 'fest', label: 'FEST', description: 'Lite extra tillfälle' }
   ]
 
   return {

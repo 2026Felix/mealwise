@@ -1,6 +1,17 @@
 import { Recipe } from '../types'
+import { normalizeRecipeTags } from '../utils/recipeHelpers'
 
-type Difficulty = 'easy' | 'medium' | 'hard'
+// Allowed recipe tags (fixed set):
+// - Vegetarisk
+// - Vegansk
+// - Snabb
+// - Vardagsmiddag
+// - Fest
+//
+// Note: All tag arrays in this file should only contain the values above.
+//       As an additional safeguard, tags are normalized in `make(...)` and
+//       again when exporting `defaultRecipes` to prevent legacy values.
+
 type Category = 'vegetables' | 'carbs' | 'protein' | 'dairy'
 
 function make(
@@ -12,7 +23,7 @@ function make(
   prepTime: number,
   cookTime: number,
   category: Category,
-  difficulty: Difficulty = 'easy',
+  _difficulty?: any,
   nutrition?: {
     calories: number
     protein: number
@@ -35,9 +46,8 @@ function make(
     totalTime: prepTime + cookTime,
     servings: 4,
     category, 
-    difficulty,
     nutrition,
-    tags
+    tags: normalizeRecipeTags(tags)
   }
 }
 
@@ -65,7 +75,7 @@ const baseRecipes: Recipe[] = [
       fiber: 3,
       sodium: 800
     },
-    ['klassisk', 'svensk', 'kött', 'potatis', 'husman', 'familj', 'vinter', 'söndagsmiddag']
+    []
   ),
 
   make(2, 'Korv Stroganoff', 
@@ -91,7 +101,7 @@ const baseRecipes: Recipe[] = [
       fiber: 2,
       sodium: 1200
     },
-    ['korv', 'gryta', 'krämig', 'snabb', 'varm', 'ris', 'vinter', 'vardag']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(3, 'Kalops', 
@@ -117,7 +127,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 900
     },
-    ['långkok', 'kött', 'buljong', 'traditionell', 'vinter', 'helg', 'mörbakat', 'husman']
+    []
   ),
 
   make(4, 'Dillkött', 
@@ -143,7 +153,7 @@ const baseRecipes: Recipe[] = [
       fiber: 1,
       sodium: 850
     },
-    ['kalv', 'dill', 'krämig', 'klassisk', 'vår', 'sommar', 'elegant', 'middag']
+    ['Fest']
   ),
 
   make(5, 'Ugnspannkaka', 
@@ -169,7 +179,7 @@ const baseRecipes: Recipe[] = [
       fiber: 1,
       sodium: 600
     },
-    ['pannkaka', 'ugn', 'bacon', 'snabb', 'varm', 'lingon', 'vardag', 'familj']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(6, 'Janssons frestelse', 
@@ -196,7 +206,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 1100
     },
-    ['gratäng', 'potatis', 'ansjovis', 'traditionsrätt', 'jul', 'vinter', 'ugn', 'fest']
+    ['Fest']
   ),
 
   make(7, 'Raggmunk med fläsk', 
@@ -222,7 +232,7 @@ const baseRecipes: Recipe[] = [
       fiber: 3,
       sodium: 800
     },
-    ['potatis', 'plättar', 'fläsk', 'klassisk', 'vinter', 'husman', 'lingon', 'traditionell']
+    []
   ),
 
   make(8, 'Stekt strömming med mos', 
@@ -248,7 +258,7 @@ const baseRecipes: Recipe[] = [
       fiber: 3,
       sodium: 700
     },
-    ['strömming', 'fisk', 'potatis', 'klassisk', 'vår', 'sommar', 'färsk', 'husman']
+    []
   ),
 
   make(9, 'Pytt i panna', 
@@ -274,7 +284,7 @@ const baseRecipes: Recipe[] = [
       fiber: 3,
       sodium: 750
     },
-    ['pytt', 'potatis', 'kött', 'klassisk', 'snabb', 'vardag', 'rest', 'husman']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(10, 'Ärtsoppa', 
@@ -300,7 +310,7 @@ const baseRecipes: Recipe[] = [
       fiber: 18,
       sodium: 600
     },
-    ['ärtor', 'soppa', 'traditionsrätt', 'torsdag', 'vinter', 'buljong', 'långkok', 'klassisk']
+    []
   ),
 
   make(11, 'Lax med dillsås', 
@@ -326,7 +336,7 @@ const baseRecipes: Recipe[] = [
       fiber: 2,
       sodium: 500
     },
-    ['lax', 'fisk', 'dill', 'hälsosam', 'vår', 'sommar', 'ugn', 'elegant', 'middag']
+    ['Fest']
   ),
 
   make(12, 'Köttfärslimpa', 
@@ -352,7 +362,7 @@ const baseRecipes: Recipe[] = [
       fiber: 2,
       sodium: 900
     },
-    ['köttfärs', 'limpa', 'ugn', 'klassisk', 'vinter', 'helg', 'familj', 'husman']
+    []
   ),
 
   make(13, 'Blodpudding', 
@@ -378,7 +388,7 @@ const baseRecipes: Recipe[] = [
       fiber: 2,
       sodium: 800
     },
-    ['blodpudding', 'traditionsrätt', 'fläsk', 'klassisk', 'vinter', 'husman', 'lingon', 'vardag']
+    ['Vardagsmiddag']
   ),
 
   make(14, 'Kroppkakor', 
@@ -404,7 +414,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 600
     },
-    ['kroppkakor', 'potatis', 'bullar', 'traditionsrätt', 'vinter', 'husman', 'lingon', 'helg']
+    ['Fest']
   ),
 
   make(15, 'Surströmming', 
@@ -430,7 +440,7 @@ const baseRecipes: Recipe[] = [
       fiber: 3,
       sodium: 1200
     },
-    ['surströmming', 'fermenterad', 'traditionsrätt', 'avancerad', 'sommar', 'fest', 'norrland', 'special']
+    ['Fest']
   ),
 
   make(16, 'Vegetarisk lasagne', 
@@ -456,7 +466,7 @@ const baseRecipes: Recipe[] = [
       fiber: 6,
       sodium: 600
     },
-    ['vegetarisk', 'lasagne', 'grönsaker', 'italiensk', 'ugn', 'familj', 'vinter', 'middag']
+    ['Vegetarisk']
   ),
 
   make(17, 'Kikärtscurry', 
@@ -482,7 +492,7 @@ const baseRecipes: Recipe[] = [
       fiber: 12,
       sodium: 400
     },
-    ['vegetarisk', 'curry', 'kikärter', 'indisk', 'varm', 'kryddig', 'billig', 'vardag']
+    ['Vegetarisk', 'Vardagsmiddag']
   ),
 
   make(18, 'Pasta carbonara', 
@@ -508,7 +518,7 @@ const baseRecipes: Recipe[] = [
       fiber: 2,
       sodium: 800
     },
-    ['pasta', 'italiensk', 'bacon', 'klassisk', 'snabb', 'elegant', 'middag', 'varm']
+    ['Snabb', 'Fest']
   ),
 
   make(19, 'Tacos med nötfärs', 
@@ -534,7 +544,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 700
     },
-    ['tacos', 'mexikansk', 'kött', 'snabb', 'familj', 'fest', 'varm', 'vardag']
+    ['Snabb', 'Fest', 'Vardagsmiddag']
   ),
 
   make(20, 'Sushi med lax', 
@@ -560,7 +570,7 @@ const baseRecipes: Recipe[] = [
       fiber: 3,
       sodium: 500
     },
-    ['sushi', 'japansk', 'lax', 'avancerad', 'sommar', 'fest', 'elegant', 'special']
+    ['Fest']
   ),
 
   // Middagar
@@ -587,7 +597,7 @@ const baseRecipes: Recipe[] = [
       fiber: 5,
       sodium: 700
     },
-    ['indisk', 'kyckling', 'gryta', 'kryddig', 'varm', 'familj', 'middag', 'ris']
+    []
   ),
 
   make(22, 'Chili sin carne',
@@ -613,7 +623,7 @@ const baseRecipes: Recipe[] = [
       fiber: 14,
       sodium: 450
     },
-    ['vegetarisk', 'gryta', 'mexikansk', 'varm', 'kryddig', 'billig', 'vardag', 'familj']
+    ['Vegetarisk', 'Vardagsmiddag']
   ),
 
   make(23, 'Tonfiskpasta med citron',
@@ -639,7 +649,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 550
     },
-    ['pasta', 'fisk', 'snabb', 'citron', 'vår', 'sommar', 'vardag', 'elegant']
+    ['Snabb', 'Vardagsmiddag', 'Fest']
   ),
 
   make(24, 'Linsgryta med spenat',
@@ -665,7 +675,7 @@ const baseRecipes: Recipe[] = [
       fiber: 12,
       sodium: 500
     },
-    ['vegansk', 'gryta', 'linser', 'varm', 'kryddig', 'billig', 'vardag', 'hälsosam']
+    ['Vegansk', 'Vardagsmiddag']
   ),
 
   make(25, 'Biff med bea och klyftpotatis',
@@ -691,7 +701,7 @@ const baseRecipes: Recipe[] = [
       fiber: 6,
       sodium: 700
     },
-    ['nötkött', 'sås', 'ugnspotatis', 'elegant', 'helg', 'middag', 'fest', 'husman']
+    ['Fest']
   ),
 
   make(26, 'Kycklingwok med nudlar',
@@ -717,7 +727,7 @@ const baseRecipes: Recipe[] = [
       fiber: 5,
       sodium: 900
     },
-    ['asiatisk', 'wok', 'snabb', 'kyckling', 'vardag', 'familj', 'varm', 'nudlar']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(27, 'Falafel i pitabröd',
@@ -743,7 +753,7 @@ const baseRecipes: Recipe[] = [
       fiber: 10,
       sodium: 700
     },
-    ['vegetarisk', 'mellanöstern', 'snabb', 'falafel', 'varm', 'familj', 'vardag', 'fest']
+    ['Vegetarisk', 'Snabb', 'Vardagsmiddag', 'Fest']
   ),
 
   make(28, 'Torsk med brynt smör',
@@ -769,7 +779,7 @@ const baseRecipes: Recipe[] = [
       fiber: 5,
       sodium: 500
     },
-    ['fisk', 'ugn', 'klassisk', 'vår', 'sommar', 'elegant', 'middag', 'husman']
+    ['Fest']
   ),
 
   make(29, 'Pad Thai med räkor',
@@ -795,7 +805,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 900
     },
-    ['thailändsk', 'nudlar', 'räkor', 'asiatisk', 'varm', 'fest', 'middag', 'elegant']
+    ['Fest']
   ),
 
   make(30, 'Gnocchi med tomat och mozzarella',
@@ -821,7 +831,7 @@ const baseRecipes: Recipe[] = [
       fiber: 4,
       sodium: 600
     },
-    ['italiensk', 'vegetarisk', 'gnocchi', 'snabb', 'ugn', 'familj', 'vardag', 'tomat']
+    ['Vegetarisk', 'Snabb', 'Vardagsmiddag']
   ),
 
   // Fler vanliga middagar
@@ -841,7 +851,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 20, 'protein', 'easy',
     { calories: 700, protein: 38, carbs: 60, fat: 32 },
-    ['pasta', 'kyckling', 'krämig', 'italiensk', 'familj', 'middag', 'varm', 'vardag']
+    []
   ),
 
   make(32, 'Fish tacos',
@@ -860,7 +870,7 @@ const baseRecipes: Recipe[] = [
     ],
     15, 15, 'protein', 'easy',
     { calories: 480, protein: 28, carbs: 40, fat: 20 },
-    ['mexikansk', 'fisk', 'snabb', 'tortilla', 'varm', 'familj', 'fest', 'vardag']
+    ['Snabb', 'Fest', 'Vardagsmiddag']
   ),
 
   make(33, 'Biffwok med broccoli',
@@ -879,7 +889,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 10, 'protein', 'easy',
     { calories: 420, protein: 35, carbs: 20, fat: 22 },
-    ['asiatisk', 'wok', 'snabb', 'nötkött', 'varm', 'vardag', 'familj', 'grönsaker']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(34, 'Shepherd\'s pie',
@@ -898,7 +908,7 @@ const baseRecipes: Recipe[] = [
     ],
     20, 30, 'protein', 'medium',
     { calories: 650, protein: 32, carbs: 70, fat: 24 },
-    ['brittisk', 'gratäng', 'potatis', 'familj', 'vinter', 'helg', 'husman', 'middag']
+    ['Fest']
   ),
 
   make(35, 'Korv och mos',
@@ -917,7 +927,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 20, 'protein', 'easy',
     { calories: 620, protein: 22, carbs: 58, fat: 28 },
-    ['klassisk', 'snabb', 'korv', 'husman', 'vardag', 'familj', 'vinter', 'potatis']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(36, 'Teriyaki lax',
@@ -936,7 +946,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 12, 'protein', 'easy',
     { calories: 520, protein: 34, carbs: 52, fat: 18 },
-    ['fisk', 'asiatisk', 'snabb', 'lax', 'vår', 'sommar', 'elegant', 'middag']
+    ['Snabb', 'Fest']
   ),
 
   make(37, 'Vegetarisk pytt i panna',
@@ -955,7 +965,7 @@ const baseRecipes: Recipe[] = [
     ],
     15, 15, 'vegetables', 'easy',
     { calories: 420, protein: 20, carbs: 52, fat: 14 },
-    ['vegetarisk', 'snabb', 'tofu', 'rotfrukter', 'vardag', 'familj', 'vinter', 'husman']
+    ['Vegetarisk', 'Snabb', 'Vardagsmiddag']
   ),
 
   make(38, 'Pulled pork tacos',
@@ -974,7 +984,7 @@ const baseRecipes: Recipe[] = [
     ],
     20, 180, 'protein', 'medium',
     { calories: 680, protein: 42, carbs: 50, fat: 32 },
-    ['mexikansk', 'långkok', 'fläsk', 'BBQ', 'helg', 'fest', 'familj', 'varm']
+    ['Fest']
   ),
 
   make(39, 'Kalkonköttbullar med tomatsås',
@@ -993,7 +1003,7 @@ const baseRecipes: Recipe[] = [
     ],
     15, 20, 'protein', 'easy',
     { calories: 540, protein: 36, carbs: 56, fat: 16 },
-    ['färs', 'pasta', 'snabb', 'kalkon', 'familj', 'vardag', 'hälsosam', 'middag']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(40, 'Räkor i vitlök',
@@ -1012,7 +1022,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 5, 'protein', 'easy',
     { calories: 380, protein: 30, carbs: 18, fat: 18 },
-    ['skaldjur', 'snabb', 'medelhav', 'vitlök', 'vår', 'sommar', 'elegant', 'förrätt']
+    ['Snabb', 'Fest']
   ),
 
   make(41, 'Kyckling fajitas',
@@ -1031,7 +1041,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 12, 'protein', 'easy',
     { calories: 520, protein: 36, carbs: 48, fat: 18 },
-    ['mexikansk', 'kyckling', 'snabb', 'tortilla', 'varm', 'familj', 'fest', 'vardag']
+    ['Snabb', 'Fest', 'Vardagsmiddag']
   ),
 
   make(42, 'Burritos med nötkött',
@@ -1050,7 +1060,7 @@ const baseRecipes: Recipe[] = [
     ],
     15, 20, 'protein', 'medium',
     { calories: 760, protein: 40, carbs: 90, fat: 24 },
-    ['mexikansk', 'wrap', 'matlåda', 'familj', 'fest', 'varm', 'middag', 'husman']
+    ['Fest']
   ),
 
   make(43, 'Svampstroganoff',
@@ -1069,7 +1079,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 15, 'vegetables', 'easy',
     { calories: 520, protein: 12, carbs: 70, fat: 18 },
-    ['vegetarisk', 'gryta', 'svamp', 'krämig', 'varm', 'vinter', 'vardag', 'familj']
+    ['Vegetarisk', 'Vardagsmiddag']
   ),
 
   make(44, 'Fläskkotlett med äpple',
@@ -1088,7 +1098,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 20, 'protein', 'easy',
     { calories: 620, protein: 42, carbs: 48, fat: 26 },
-    ['fläsk', 'snabb', 'husman', 'äpple', 'vinter', 'familj', 'vardag', 'potatis']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(45, 'Kyckling curry kokos',
@@ -1107,7 +1117,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 20, 'protein', 'easy',
     { calories: 600, protein: 36, carbs: 60, fat: 22 },
-    ['asiatisk', 'kyckling', 'gryta', 'kryddig', 'varm', 'familj', 'middag', 'kokos']
+    []
   ),
 
   make(46, 'Linsbolognese',
@@ -1126,7 +1136,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 25, 'vegetables', 'easy',
     { calories: 520, protein: 20, carbs: 86, fat: 8 },
-    ['vegetarisk', 'pasta', 'billig', 'linser', 'italiensk', 'vardag', 'familj', 'hälsosam']
+    ['Vegetarisk', 'Vardagsmiddag']
   ),
 
   make(47, 'BBQ-kyckling i ugn',
@@ -1145,7 +1155,7 @@ const baseRecipes: Recipe[] = [
     ],
     15, 40, 'protein', 'easy',
     { calories: 700, protein: 44, carbs: 68, fat: 24 },
-    ['ugn', 'kyckling', 'familj', 'BBQ', 'helg', 'fest', 'varm', 'middag']
+    ['Fest']
   ),
 
   make(48, 'Grekisk souvlaki',
@@ -1164,7 +1174,7 @@ const baseRecipes: Recipe[] = [
     ],
     20, 15, 'protein', 'medium',
     { calories: 620, protein: 40, carbs: 52, fat: 24 },
-    ['grekisk', 'grillat', 'snabb', 'spett', 'sommar', 'fest', 'familj', 'medelhav']
+    ['Snabb', 'Fest']
   ),
 
   make(49, 'Pytt med korv',
@@ -1183,7 +1193,7 @@ const baseRecipes: Recipe[] = [
     ],
     15, 15, 'protein', 'easy',
     { calories: 620, protein: 26, carbs: 56, fat: 28 },
-    ['husman', 'snabb', 'korv', 'pytt', 'vinter', 'vardag', 'familj', 'rest']
+    ['Snabb', 'Vardagsmiddag']
   ),
 
   make(50, 'Shakshuka med feta',
@@ -1202,7 +1212,7 @@ const baseRecipes: Recipe[] = [
     ],
     10, 20, 'dairy', 'easy',
     { calories: 480, protein: 24, carbs: 28, fat: 28 },
-    ['mellanöstern', 'vegetarisk', 'gryta', 'ägg', 'varm', 'vår', 'sommar', 'brunch']
+    ['Vegetarisk']
   )
 ]
 
@@ -1211,6 +1221,9 @@ export function expandToHundred(base: Recipe[]): Recipe[] {
   return base.slice(0, 50)
 }
 
-export const defaultRecipes: Recipe[] = expandToHundred(baseRecipes)
+export const defaultRecipes: Recipe[] = expandToHundred(baseRecipes).map(r => ({
+  ...r,
+  tags: normalizeRecipeTags(r.tags)
+}))
 
 

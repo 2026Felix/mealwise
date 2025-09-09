@@ -2,9 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
-import { initAnalytics } from './utils/analytics'
+import { initAnalytics } from './utils/tracking'
 
 initAnalytics()
+// Analytics removed for simplicity
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

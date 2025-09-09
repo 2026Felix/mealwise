@@ -119,8 +119,7 @@ const generateSmartSuggestions = (weekPlan: DayPlan[], recipeLibrary: Recipe[]):
         }
       })
       
-      // Extra poäng för enkla recept
-      if (recipe.difficulty === 'easy') score += 1
+      // Svårighetsgrad påverkar inte längre poängen
       
       return { recipe, score }
     })

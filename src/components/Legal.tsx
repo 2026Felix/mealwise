@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { commonClasses, responsiveText, textColors, spacing } from '../utils/commonStyles'
+import { commonClasses, responsiveText, textColors, spacing } from '../utils/uiStyles'
 
 const Legal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms')

@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback, memo, useEffect } from 'react'
-import { useRecipeContext } from '../context/RecipeContext'
+import { useRecipeContext } from '../context/AppState'
 import { Search, ClipboardList, CookingPot, CheckCircle } from 'lucide-react'
-import { buttonStyles } from '../utils/commonStyles'
-import { rankRecipesByIngredientOverlap } from '../utils/recipeUtils'
+import { buttonStyles } from '../utils/uiStyles'
+import { rankRecipesByIngredientOverlap } from '../utils/recipeHelpers'
 import { Recipe } from '../types'
-import RecipeDetailModal from './RecipeDetailModal'
+import RecipeModal from './RecipeModal'
 
 // Ingrediens-tag komponent
 const IngredientTag: React.FC<{
@@ -383,7 +383,7 @@ const RecipeFinder: React.FC = memo(() => {
 
       {/* Modal för receptdetaljer */}
       {selectedRecipe && showRecipeDetails && (
-        <RecipeDetailModal
+        <RecipeModal
           recipe={selectedRecipe}
           isOpen={showRecipeDetails}
           onClose={handleCloseRecipeDetails}

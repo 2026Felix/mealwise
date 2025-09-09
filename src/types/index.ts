@@ -27,7 +27,6 @@ export interface Recipe {
   totalTime: number
   servings: number
   category?: 'vegetables' | 'carbs' | 'protein' | 'dairy'
-  difficulty?: 'easy' | 'medium' | 'hard'
   image?: string
   nutrition?: NutritionFacts
   tags?: string[]

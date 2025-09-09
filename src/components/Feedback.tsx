@@ -1,4 +1,4 @@
-import { commonClasses, responsiveText, textColors, spacing } from '../utils/commonStyles'
+import { commonClasses, responsiveText, textColors, spacing } from '../utils/uiStyles'
 
 const Feedback: React.FC = () => {
   return (

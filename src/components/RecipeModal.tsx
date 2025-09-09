@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { X, Clock, Users } from 'lucide-react'
 import { Recipe as RecipeType } from '../types'
-import { buttonStyles } from '../utils/commonStyles'
-import { useScrollLock } from '../hooks/useScrollLock'
+import { buttonStyles } from '../utils/uiStyles'
+import { normalizeRecipeTags } from '../utils/recipeHelpers'
+import { useScrollLock } from '../hooks/useScrollControl'
 
 interface RecipeDetailModalProps {
   recipe: RecipeType
@@ -79,8 +80,8 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-t-xl sm:rounded-xl max-w-4xl w-full h-[95vh] sm:max-h-[95vh] overflow-hidden shadow-2xl sm:shadow-2xl">
         {/* Header */}
         <div className="relative p-6">
           {/* Bakgrundsbild om den finns */}
@@ -157,11 +158,11 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
                 </p>
               )}
 
-              {/* Taggar flyttade hit från Översikt-fliken */}
-              {recipe.tags && recipe.tags.length > 0 && (
+              {/* Normaliserade taggar (endast tillåtna) */}
+              {normalizeRecipeTags(recipe.tags).length > 0 && (
                 <div className="mb-4">
                   <div className="flex flex-wrap gap-2">
-                    {recipe.tags.map((tag, index) => (
+                    {normalizeRecipeTags(recipe.tags).map((tag, index) => (
                       <span
                         key={index}
                         className={buttonStyles.filterTag}
@@ -199,8 +200,8 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, isOpen, o
           </div>
         </div>
 
-        {/* Innehåll */}
-        <div className="px-4 pt-1 pb-4 overflow-y-auto max-h-[60vh] w-full">
+        {/* Innehåll - förbättrad mobil scroll */}
+        <div className="px-4 pt-1 pb-4 overflow-y-auto max-h-[60vh] w-full overscroll-contain touch-scroll scroll-indicator" style={{ WebkitOverflowScrolling: 'touch' }}>
           {activeTab === 'ingredients' && (
             <div>
               {/* Ingredienslista */}
