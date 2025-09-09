@@ -71,6 +71,8 @@ const RecipeCard: React.FC<{
 }) => {
   const [isDragging, setIsDragging] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [touchStartY, setTouchStartY] = useState(0)
+  const [touchMoved, setTouchMoved] = useState(false)
 
   // Kolla mobilvy
   useEffect(() => {
@@ -116,17 +118,44 @@ const RecipeCard: React.FC<{
     }
   }, [isMobile, onAddToDay])
 
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isMobile) return
+    
+    const touch = e.touches[0]
+    setTouchStartY(touch.clientY)
+    setTouchMoved(false)
+  }, [isMobile])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isMobile) return
+    
+    const touch = e.touches[0]
+    const deltaY = Math.abs(touch.clientY - touchStartY)
+    
+    // Om användaren har rört sig mer än 10px, räkna det som scrollning
+    if (deltaY > 10) {
+      setTouchMoved(true)
+    }
+  }, [isMobile, touchStartY])
+
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!isMobile) return
+    
     // Stoppa event bubbling om touch kommer från en knapp
     if ((e.target as HTMLElement).closest('button')) {
       return
     }
     
-    if (isMobile && onAddToDay) {
+    // Om användaren har scrollat, trigga inte onAddToDay
+    if (touchMoved) {
+      return
+    }
+    
+    if (onAddToDay) {
       e.preventDefault()
       onAddToDay()
     }
-  }, [isMobile, onAddToDay])
+  }, [isMobile, onAddToDay, touchMoved])
 
   const categoryColor = getCategoryColor(recipe.category)
 
@@ -143,6 +172,8 @@ const RecipeCard: React.FC<{
       onDragEnd={handleDragEnd}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       role={isMobile && onAddToDay ? "button" : "article"}
       tabIndex={isMobile && onAddToDay ? 0 : -1}
@@ -844,7 +875,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
             </div>
 
             {/* Receptlista i rader */}
-            <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto">
+            <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto overscroll-contain touch-pan-y touch-scroll scroll-indicator">
               {filteredRecipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
@@ -887,7 +918,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
               </button>
             </div>
             {!isCollapsed && (
-              <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto">
+              <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto overscroll-contain touch-pan-y touch-scroll scroll-indicator">
                 {recommendations.length > 0 ? (
                   recommendations.map((recipe) => (
                     <RecipeCard 
