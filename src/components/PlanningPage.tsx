@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, memo, useEffect } from 'react'
 import { useRecipeContext } from '../context/AppState'
-import { ShoppingCart, X, Check, Brain, ChevronDown, ChevronUp, CookingPot, Search, Clock, ChefHat, CalendarDays, Minus, Plus } from 'lucide-react'
-import { buttonStyles, commonClasses, spacing } from '../utils/uiStyles'
+import { ShoppingCart, X, Check, Brain, ChevronDown, ChevronUp, CookingPot, Search, ChefHat, CalendarDays, Minus, Plus } from 'lucide-react'
+import { buttonStyles, spacing } from '../utils/uiStyles'
 import { FilterType } from '../hooks/useFiltering'
 import { useScrollLock } from '../hooks/useScrollControl'
 import { getCategoryColor, passesRecipeFilters } from '../utils/recipeHelpers'
@@ -9,6 +9,50 @@ import { sanitizeUserInput } from '../utils/validation'
 import RecipeModal from './RecipeModal'
 import type { DayPlan, Recipe } from '../types'
 import { DAYS_OF_WEEK } from '../constants'
+
+// Gemensam modal-komponent för att minska duplicering
+const Modal: React.FC<{
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: React.ReactNode
+  className?: string
+}> = ({ isOpen, onClose, title, children, className = "" }) => {
+  if (!isOpen) return null
+
+  return (
+    <div 
+      className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <div className={`bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[85vh] sm:h-[90vh] overflow-hidden shadow-2xl sm:shadow-2xl ${className}`}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+              {title}
+            </h3>
+            <button
+              onClick={onClose}
+              onTouchEnd={(e) => {
+                e.preventDefault()
+                onClose()
+              }}
+              className={`${buttonStyles.iconTransparentClose} touch-manipulation`}
+              aria-label="Stäng modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // RecipeCard – radkomponent för receptlistor
 const RecipeCard: React.FC<{
@@ -52,7 +96,12 @@ const RecipeCard: React.FC<{
     setIsDragging(false)
   }, [])
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    // Stoppa event bubbling om klicket kommer från en knapp
+    if ((e.target as HTMLElement).closest('button')) {
+      return
+    }
+    
     if (isMobile && onAddToDay) {
       onAddToDay()
     }
@@ -67,13 +116,25 @@ const RecipeCard: React.FC<{
     }
   }, [isMobile, onAddToDay])
 
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    // Stoppa event bubbling om touch kommer från en knapp
+    if ((e.target as HTMLElement).closest('button')) {
+      return
+    }
+    
+    if (isMobile && onAddToDay) {
+      e.preventDefault()
+      onAddToDay()
+    }
+  }, [isMobile, onAddToDay])
+
   const categoryColor = getCategoryColor(recipe.category)
 
   return (
     <div 
       className={`bg-white border-2 border-solid rounded-lg p-3 sm:p-4 transition-colors duration-200 hover:bg-gray-50 ${
         isDragging ? 'opacity-50 scale-95' : ''
-      } h-14 sm:h-18 relative group touch-manipulation ${isMobile && onAddToDay ? 'cursor-pointer' : ''}`}
+      } h-14 sm:h-18 relative group touch-manipulation ${isMobile && onAddToDay ? 'cursor-pointer active:bg-gray-100' : ''}`}
       style={{
         borderColor: categoryColor !== 'transparent' ? categoryColor : '#e5e7eb'
       }}
@@ -82,6 +143,7 @@ const RecipeCard: React.FC<{
       onDragEnd={handleDragEnd}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onTouchEnd={handleTouchEnd}
       role={isMobile && onAddToDay ? "button" : "article"}
       tabIndex={isMobile && onAddToDay ? 0 : -1}
       aria-label={isMobile && onAddToDay ? `Lägg till ${recipe.name} i veckoplan` : `Rekommendation: ${recipe.name}`}
@@ -116,9 +178,15 @@ const RecipeCard: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation() // Stoppa event bubbling så att onAddToDay inte triggas
+                e.preventDefault()
                 onShowDetails()
               }}
-              className={buttonStyles.iconTransparentSmall}
+              onTouchEnd={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                onShowDetails()
+              }}
+              className={`${buttonStyles.iconTransparentSmall} touch-manipulation`}
               title="Visa receptdetaljer"
               aria-label={`Visa detaljer för ${recipe.name}`}
             >
@@ -143,20 +211,20 @@ const RecipeCard: React.FC<{
 interface DayCardProps {
   day: DayPlan
   isGlobalDragActive?: boolean
+  onShowRecipeDetails: (recipe: Recipe) => void
+  onCloseRecipeDetails: () => void
 }
 
-const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false }) => {
+const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false, onShowRecipeDetails, onCloseRecipeDetails }) => {
   const { dispatch } = useRecipeContext()
   const [isDragOver, setIsDragOver] = useState(false)
   const [dragCounter, setDragCounter] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [isLaptopPlus, setIsLaptopPlus] = useState(false)
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
-  const [showRecipeDetails, setShowRecipeDetails] = useState(false)
   const [showRecipeSelector, setShowRecipeSelector] = useState(false)
 
   // Lås scroll när modal(er) är öppna
-  useScrollLock(showRecipeDetails || showRecipeSelector)
+  useScrollLock(showRecipeSelector)
 
   // Skärmdetektering
   useEffect(() => {
@@ -244,13 +312,6 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false 
     })
   }, [day.day, dispatch])
 
-  const handleAddRecipe = useCallback((recipe: Recipe, dayName: string) => {
-    dispatch({
-      type: 'ADD_RECIPE_TO_DAY',
-      day: dayName,
-      recipe
-    })
-  }, [dispatch])
 
   // På mobil: hänvisa till receptlistan vid tom dag
   const handleEmptyDayClick = useCallback(() => {
@@ -273,16 +334,6 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false 
       handleEmptyDayClick()
     }
   }, [isLaptopPlus, isMobile, day.recipes.length, handleEmptyDayClick])
-
-  const handleShowRecipeDetails = useCallback((recipe: Recipe) => {
-    setSelectedRecipe(recipe)
-    setShowRecipeDetails(true)
-  }, [])
-
-  const handleCloseRecipeDetails = useCallback(() => {
-    setShowRecipeDetails(false)
-    setSelectedRecipe(null)
-  }, [])
 
   return (
     <div className="bg-gray-50 rounded-xl p-2">
@@ -375,7 +426,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false 
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleShowRecipeDetails(mealInstance.recipe)
+                          onShowRecipeDetails(mealInstance.recipe)
                         }}
                         className={buttonStyles.iconTransparentSmall}
                         title="Visa receptdetaljer"
@@ -403,14 +454,6 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false 
         )}
       </div>
 
-      {/* Receptdetaljer modal */}
-      {selectedRecipe && showRecipeDetails && (
-        <RecipeModal
-          recipe={selectedRecipe}
-          isOpen={showRecipeDetails}
-          onClose={handleCloseRecipeDetails}
-        />
-      )}
     </div>
   )
 })
@@ -437,8 +480,6 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   const [showDetailedList, setShowDetailedList] = useState(false)
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set())
   const [viewMode, setViewMode] = useState<'recipe' | 'shopping'>('shopping')
-  const [portions, setPortions] = useState(4)
-  
   // Per-recept portionskontroll för "Veckans rätter"-vyn i modalen
   const [recipePortions, setRecipePortions] = useState<Record<string, number>>({})
 
@@ -528,12 +569,6 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
     setCheckedIngredients(newChecked)
   }
 
-  // Ändra antal portioner
-  const handlePortionChange = (newPortions: number) => {
-    if (newPortions >= 1 && newPortions <= 8) {
-      setPortions(newPortions)
-    }
-  }
 
   // Ingredienser grupperade per recept (för modalens receptvy)
   const getIngredientsByRecipe = () => {
@@ -749,6 +784,8 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                   <DayCard 
                     day={day} 
                     isGlobalDragActive={false}
+                    onShowRecipeDetails={handleShowRecipeDetails}
+                    onCloseRecipeDetails={handleCloseRecipeDetails}
                   />
                 </div>
               ))}
@@ -835,7 +872,11 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
               
               <button
                 onClick={toggleCollapse}
-                className="p-1.5 sm:p-2 hover:bg-white rounded-lg transition-colors duration-200 group inline-flex items-center justify-center"
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  toggleCollapse()
+                }}
+                className="p-1.5 sm:p-2 hover:bg-white rounded-lg transition-colors duration-200 group inline-flex items-center justify-center touch-manipulation"
                 title={isCollapsed ? "Expandera" : "Vik ihop"}
               >
                 {isCollapsed ? (
@@ -908,24 +949,15 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
       </div>
 
       {/* Modal för detaljerad ingredienslista */}
-      {showDetailedList && (
-        <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[85vh] sm:h-[90vh] overflow-y-auto shadow-2xl sm:shadow-2xl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                  Överblick
-                </h3>
-                <button
-                  onClick={() => setShowDetailedList(false)}
-                  className={buttonStyles.iconTransparentClose}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+      <Modal
+        isOpen={showDetailedList}
+        onClose={() => setShowDetailedList(false)}
+        title="Överblick"
+        className="overflow-y-auto"
+      >
 
-              {/* View toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
+        {/* View toggle */}
+        <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
                 <button
                   onClick={() => setViewMode('recipe')}
                   className={`${buttonStyles.tab} ${
@@ -1061,10 +1093,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Modal för receptdetaljer */}
       {selectedRecipe && showRecipeDetails && (
@@ -1076,23 +1105,11 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
       )}
 
       {/* Modal för att välja dag */}
-      {showDaySelector && selectedRecipe && (
-        <div className="fixed inset-0 bg-gray-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-t-xl sm:rounded-xl max-w-2xl w-full h-[85vh] sm:h-[90vh] overflow-hidden shadow-2xl sm:shadow-2xl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-normal text-gray-600">Välj dag för:</span>
-                <h3 id="day-selector-title" className="text-lg sm:text-xl font-semibold text-gray-900 text-center flex-1">
-                  {selectedRecipe.name}
-                </h3>
-                <button
-                  onClick={closeDaySelector}
-                  className={buttonStyles.iconTransparentClose}
-                  aria-label="Stäng dag-väljaren"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+      <Modal
+        isOpen={showDaySelector && !!selectedRecipe}
+        onClose={closeDaySelector}
+        title={selectedRecipe ? `Välj dag för: ${selectedRecipe.name}` : "Välj dag"}
+      >
               
               <div 
                 className="space-y-3"
@@ -1100,11 +1117,15 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                 aria-labelledby="day-selector-title"
                 id="day-selector-description"
               >
-                {state.weekPlan.map((day) => (
+                {selectedRecipe && state.weekPlan.map((day) => (
                   <button
                     key={day.day}
                     onClick={() => handleAddToDay(selectedRecipe, day.day)}
-                    className={`w-full text-left p-4 rounded-lg transition-colors touch-target ${
+                    onTouchEnd={(e) => {
+                      e.preventDefault()
+                      handleAddToDay(selectedRecipe, day.day)
+                    }}
+                    className={`w-full text-left p-4 rounded-lg transition-colors touch-target touch-manipulation ${
                       day.recipes.length > 0 
                         ? 'bg-gray-50 hover:bg-gray-100 border border-gray-300' 
                         : 'bg-white border border-dashed border-gray-300 hover:bg-gray-50'
@@ -1118,10 +1139,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* aria-live borttagen i återställning */}
     </div>
