@@ -1,4 +1,5 @@
 import PlanningPage from './components/PlanningPage'
+import Randomizer from './components/Randomizer'
 import RecipeSearch from './components/RecipeSearch'
 import RecipeLibrary from './components/RecipeLibrary'
 import { RecipeProvider } from './context/AppState'
@@ -104,6 +105,7 @@ const Navigation: React.FC = () => {
   // Navigation items - enkel lista utan dropdowns
   const navigationItems = [
     { to: '/plan', label: 'Veckoplan' },
+    { to: '/random', label: 'Slumpa' },
     { to: '/what-do-you-have', label: 'Hemmafix' },
     { to: '/recipes', label: 'Recept' },
     { to: '/feedback', label: 'Feedback' }
@@ -449,6 +451,7 @@ function App() {
                 <Route path="/plan" element={
                   <PlanningPageWrapper />
                 } />
+                <Route path="/random" element={<Randomizer />} />
                 <Route path="/legal" element={
                   <Suspense fallback={
                     <div className={commonClasses.loading.container}>

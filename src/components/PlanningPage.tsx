@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo, useEffect } from 'react'
+import { useState, useMemo, useCallback, memo, useEffect, useRef } from 'react'
 import { useRecipeContext } from '../context/AppState'
 import { ShoppingCart, X, Check, Brain, ChevronDown, ChevronUp, CookingPot, Search, ChefHat, CalendarDays, Minus, Plus } from 'lucide-react'
 import { buttonStyles, spacing } from '../utils/uiStyles'
@@ -73,6 +73,8 @@ const RecipeCard: React.FC<{
   const [isMobile, setIsMobile] = useState(false)
   const [touchStartY, setTouchStartY] = useState(0)
   const [touchMoved, setTouchMoved] = useState(false)
+  const detailsBtnTouchStartY = useRef(0)
+  const detailsBtnTouchMoved = useRef(false)
 
   // Kolla mobilvy
   useEffect(() => {
@@ -212,8 +214,24 @@ const RecipeCard: React.FC<{
                 e.preventDefault()
                 onShowDetails()
               }}
+              onTouchStart={(e) => {
+                e.stopPropagation()
+                const touch = e.touches[0]
+                detailsBtnTouchStartY.current = touch.clientY
+                detailsBtnTouchMoved.current = false
+              }}
+              onTouchMove={(e) => {
+                const touch = e.touches[0]
+                const deltaY = Math.abs(touch.clientY - detailsBtnTouchStartY.current)
+                if (deltaY > 10) {
+                  detailsBtnTouchMoved.current = true
+                }
+              }}
               onTouchEnd={(e) => {
                 e.stopPropagation()
+                if (detailsBtnTouchMoved.current) {
+                  return
+                }
                 e.preventDefault()
                 onShowDetails()
               }}
@@ -253,6 +271,10 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
   const [isMobile, setIsMobile] = useState(false)
   const [isLaptopPlus, setIsLaptopPlus] = useState(false)
   const [showRecipeSelector, setShowRecipeSelector] = useState(false)
+  const detailsIconTouchStartY = useRef(0)
+  const detailsIconTouchMoved = useRef(false)
+  const removeIconTouchStartY = useRef(0)
+  const removeIconTouchMoved = useRef(false)
 
   // Lås scroll när modal(er) är öppna
   useScrollLock(showRecipeSelector)
@@ -459,6 +481,25 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
                           e.stopPropagation()
                           onShowRecipeDetails(mealInstance.recipe)
                         }}
+                        onTouchStart={(e) => {
+                          e.stopPropagation()
+                          const touch = e.touches[0]
+                          detailsIconTouchStartY.current = touch.clientY
+                          detailsIconTouchMoved.current = false
+                        }}
+                        onTouchMove={(e) => {
+                          const touch = e.touches[0]
+                          const deltaY = Math.abs(touch.clientY - detailsIconTouchStartY.current)
+                          if (deltaY > 10) {
+                            detailsIconTouchMoved.current = true
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation()
+                          if (detailsIconTouchMoved.current) return
+                          e.preventDefault()
+                          onShowRecipeDetails(mealInstance.recipe)
+                        }}
                         className={buttonStyles.iconTransparentSmall}
                         title="Visa receptdetaljer"
                       >
@@ -469,6 +510,25 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
+                          removeRecipe(mealInstance.instanceId)
+                        }}
+                        onTouchStart={(e) => {
+                          e.stopPropagation()
+                          const touch = e.touches[0]
+                          removeIconTouchStartY.current = touch.clientY
+                          removeIconTouchMoved.current = false
+                        }}
+                        onTouchMove={(e) => {
+                          const touch = e.touches[0]
+                          const deltaY = Math.abs(touch.clientY - removeIconTouchStartY.current)
+                          if (deltaY > 10) {
+                            removeIconTouchMoved.current = true
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation()
+                          if (removeIconTouchMoved.current) return
+                          e.preventDefault()
                           removeRecipe(mealInstance.instanceId)
                         }}
                         className={buttonStyles.iconTransparentSmall}
