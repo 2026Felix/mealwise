@@ -31,9 +31,11 @@ const Randomizer: React.FC = () => {
   const [showRecipeDetails, setShowRecipeDetails] = useState<boolean>(false)
   const [preferences, setPreferences] = useState<{
     location: 'home' | 'restaurant' | null
+    restaurantType: 'snabbt' | 'fancy' | 'vad_som' | null
     filters: Set<string>
   }>({
     location: null,
+    restaurantType: null,
     filters: new Set()
   })
 
@@ -41,23 +43,37 @@ const Randomizer: React.FC = () => {
 
   const restaurantCategories = useMemo(() => {
     const baseCategories = [
-      'Pizza', 'Thai', 'Kina', 'Steakhouse', 'Italienskt', 'Mexikanskt', 
-      'Indiskt', 'Japanskt', 'Sushi', 'Grekiskt', 'Franskt', 'Svenskt',
-      'Hamburgare', 'Fisk', 'Vegetariskt', 'Mellanöstern', 'Koreanskt'
+      'Hamburgare', 'Pizzeria', 'Sushi', 'Thai', 'Indiskt', 'Kinesiskt',
+      'Italienskt', 'Mexikanskt', 'Grekiskt', 'Mellanöstern', 'Koreanskt', 'Japanskt',
+      'Franskt', 'Fisk & skaldjur', 'Husmanskost', 'Tapas & vinbar',
+      'Steakhouse', 'Modern svensk', 'Vegetariskt/Veganskt'
     ]
-    
+
+    // Map restaurant type to subsets
+    const typeToCategories: Record<'snabbt' | 'fancy' | 'vad_som', string[]> = {
+      snabbt: ['Hamburgare', 'Pizzeria', 'Sushi', 'Thai', 'Indiskt', 'Kinesiskt', 'Mexikanskt', 'Streetfood'],
+      fancy: ['Franskt', 'Steakhouse', 'Italienskt', 'Fisk & skaldjur', 'Japanskt', 'Modern svensk', 'Tapas & vinbar'],
+      vad_som: baseCategories
+    }
+
+    let categories = baseCategories
+    if (preferences.restaurantType) {
+      categories = typeToCategories[preferences.restaurantType]
+    }
+
+    // Optional dietary refinement if reused later
     if (preferences.filters.has('vegetarisk')) {
-      return baseCategories.filter(cat => 
-        ['Vegetariskt', 'Indiskt', 'Thai', 'Kina', 'Grekiskt', 'Mellanöstern'].includes(cat)
+      categories = categories.filter(cat => 
+        ['Vegetariskt/Veganskt', 'Indiskt', 'Thai', 'Grekiskt', 'Mellanöstern', 'Koreanskt', 'Japanskt', 'Mexikanskt'].includes(cat)
       )
     } else if (preferences.filters.has('vegansk')) {
-      return baseCategories.filter(cat => 
-        ['Vegetariskt', 'Indiskt', 'Thai', 'Kina', 'Grekiskt', 'Mellanöstern'].includes(cat)
+      categories = categories.filter(cat => 
+        ['Vegetariskt/Veganskt', 'Indiskt', 'Thai', 'Grekiskt', 'Mellanöstern', 'Koreanskt', 'Japanskt', 'Mexikanskt'].includes(cat)
       )
     }
-    
-    return baseCategories
-  }, [preferences.filters])
+
+    return categories
+  }, [preferences.filters, preferences.restaurantType])
 
   const filteredRecipes = useMemo(() => {
     if (preferences.location !== 'home') return []
@@ -97,14 +113,15 @@ const Randomizer: React.FC = () => {
     setCurrentQuestion(0)
     setResults([])
     setRestaurantResults([])
-    setPreferences({ location: null, filters: new Set() })
+    setPreferences({ location: null, restaurantType: null, filters: new Set() })
   }, [])
 
   const nextQuestion = useCallback(() => {
-    if (currentQuestion < 2) {
+    const maxIndex = preferences.location === 'restaurant' ? 1 : 2
+    if (currentQuestion < maxIndex) {
       setCurrentQuestion(prev => prev + 1)
     }
-  }, [currentQuestion])
+  }, [currentQuestion, preferences.location])
 
   const prevQuestion = useCallback(() => {
     if (currentQuestion > 0) {
@@ -114,7 +131,11 @@ const Randomizer: React.FC = () => {
 
   const canProceed = useMemo(() => {
     if (currentQuestion === 0) return preferences.location !== null
-    if (currentQuestion === 1) return preferences.filters.size > 0 || preferences.location === 'restaurant'
+    if (currentQuestion === 1) {
+      if (preferences.location === 'home') return preferences.filters.size > 0
+      if (preferences.location === 'restaurant') return preferences.restaurantType !== null
+      return false
+    }
     if (currentQuestion === 2) return preferences.location === 'home' // Only show meal count for home
     return false
   }, [currentQuestion, preferences])
@@ -140,26 +161,20 @@ const Randomizer: React.FC = () => {
 
   return (
     <div className={`${commonClasses.container} ${spacing.section}`}>
+      {/* Page heading outside the card for better hierarchy */}
+      <div className="flex flex-col items-center justify-center mt-2 sm:mt-4 mb-8 sm:mb-10">
+        <h1 className={`${responsiveText.h2} font-bold ${textColors.primary} text-center leading-tight`}>
+          Svårt att bestämma?
+        </h1>
+        <h2 className={`text-xl sm:text-2xl font-semibold text-gray-600 text-center`}>
+          Slumpa.
+        </h2>
+      </div>
+
       <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 max-w-xl mx-auto">
-        <div className="flex items-center justify-center mb-4 sm:mb-6">
-          <h1 className={`${responsiveText.h2} font-semibold ${textColors.primary} text-center`}>Slumpa måltider</h1>
-        </div>
 
         {showQuestions ? (
           <div className="relative overflow-hidden">
-            {/* Progress indicator */}
-            <div className="flex justify-center mb-6">
-              <div className="flex space-x-2">
-                {[0, 1, 2].map((step) => (
-                  <div
-                    key={step}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      step <= currentQuestion ? 'bg-gray-900' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
 
             {/* Card container with sliding animation */}
             <div className="relative">
@@ -169,12 +184,12 @@ const Randomizer: React.FC = () => {
               >
                 {/* Question 1: Location */}
                 <div className="w-full flex-shrink-0 px-4">
-                  <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6">Var vill du äta?</h3>
+                  <div className="rounded-2xl p-5 text-center">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Var vill du äta?</h3>
                     <div className="flex gap-4 justify-center">
                       <button
                         onClick={() => {
-                          setPreferences(prev => ({ ...prev, location: 'home' }))
+                          setPreferences(prev => ({ ...prev, location: 'home', restaurantType: null }))
                           setTimeout(nextQuestion, 300)
                         }}
                         className={`px-8 py-4 rounded-xl border-2 transition-all duration-200 ${
@@ -204,11 +219,44 @@ const Randomizer: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Question 2: Restaurant type (only for restaurant) */}
+                {preferences.location === 'restaurant' && (
+                  <div className="w-full flex-shrink-0 px-4">
+                    <div className="rounded-2xl p-5 text-center">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">Vilken typ av restaurang?</h3>
+                      <p className="text-sm text-gray-500 mb-4">Välj ett alternativ</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-md mx-auto">
+                        {[
+                          { key: 'snabbt', label: 'Snabbt', icon: '⚡' },
+                          { key: 'fancy', label: 'Fancy', icon: '🍷' },
+                          { key: 'vad_som', label: 'Vad som', icon: '🤷' }
+                        ].map(({ key, label, icon }) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              setPreferences(prev => ({ ...prev, restaurantType: key as 'snabbt' | 'fancy' | 'vad_som' }))
+                            }}
+                            className={`px-8 py-4 rounded-xl border-2 transition-all duration-200 ${
+                              preferences.restaurantType === (key as any)
+                                ? 'border-gray-900 bg-gray-900 text-white shadow-lg'
+                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:shadow-md'
+                            }`}
+                          >
+                            <div className="text-3xl mb-2">{icon}</div>
+                            <div className="font-medium">{label}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Question 2: Filter options (only for home) */}
                 {preferences.location === 'home' && (
                   <div className="w-full flex-shrink-0 px-4">
-                    <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6">Vad föredrar du?</h3>
+                    <div className="rounded-2xl p-5 text-center">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">Vad föredrar du?</h3>
+                      <p className="text-sm text-gray-500 mb-4">Välj en eller flera</p>
                       <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
                         {[
                           { key: 'vegetarisk', label: 'Vegetarisk', icon: '🥬' },
@@ -239,7 +287,6 @@ const Randomizer: React.FC = () => {
                           </button>
                         ))}
                       </div>
-                      <p className="text-sm text-gray-500 mt-4">Välj en eller flera alternativ</p>
                     </div>
                   </div>
                 )}
@@ -247,8 +294,8 @@ const Randomizer: React.FC = () => {
                 {/* Question 3: Number of meals (only for home) */}
                 {preferences.location === 'home' && (
                   <div className="w-full flex-shrink-0 px-4">
-                    <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6">Hur många måltider?</h3>
+                    <div className="rounded-2xl p-5 text-center">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-4">Hur många måltider?</h3>
                       <div className="flex items-center justify-center gap-4">
                         <button
                           onClick={() => changeMealCount(-1)}
@@ -286,8 +333,9 @@ const Randomizer: React.FC = () => {
               </div>
             </div>
 
-            {/* Navigation buttons */}
-            <div className="flex justify-between items-center mt-6">
+            {/* Navigation buttons */
+            }
+            <div className="flex justify-between items-center mt-5">
               <button
                 onClick={prevQuestion}
                 disabled={currentQuestion === 0}
@@ -323,6 +371,22 @@ const Randomizer: React.FC = () => {
                 </button>
               )}
             </div>
+
+            {/* Progress indicator - moved below navigation */}
+            <div className="flex justify-center mt-3">
+              <div className="flex space-x-1.5">
+                {(
+                  preferences.location === 'restaurant' ? [0, 1] : [0, 1, 2]
+                ).map((step) => (
+                  <div
+                    key={step}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      step <= currentQuestion ? 'bg-gray-400' : 'bg-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
@@ -357,6 +421,17 @@ const Randomizer: React.FC = () => {
                 {restaurantResults.map((category, index) => (
                   <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
                     <h3 className="text-lg font-medium text-gray-900">{category}</h3>
+                    <div className="mt-3">
+                      <a
+                        href={`https://www.google.com/maps/search/${encodeURIComponent(category + ' restaurang')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                        aria-label={`Öppna Google Maps för ${category}`}
+                      >
+                        📍 Hitta i Maps
+                      </a>
+                    </div>
                   </div>
                 ))}
               </div>
