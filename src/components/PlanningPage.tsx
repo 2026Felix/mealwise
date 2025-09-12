@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, memo, useEffect, useRef } from 'react'
 import { useRecipeContext } from '../context/AppState'
 import { ShoppingCart, X, Check, Brain, ChevronDown, ChevronUp, CookingPot, Search, ChefHat, CalendarDays, Minus, Plus } from 'lucide-react'
-import { buttonStyles, spacing } from '../utils/uiStyles'
+import { buttonStyles, spacing, commonClasses } from '../utils/uiStyles'
 import { FilterType } from '../hooks/useFiltering'
 import { useScrollLock } from '../hooks/useScrollControl'
 import { getCategoryColor, passesRecipeFilters } from '../utils/recipeHelpers'
@@ -11,6 +11,7 @@ import type { DayPlan, Recipe } from '../types'
 import { DAYS_OF_WEEK } from '../constants'
 
 // Gemensam modal-komponent för att minska duplicering
+// Hanterar både desktop och mobil layout med touch-optimering
 const Modal: React.FC<{
   isOpen: boolean
   onClose: () => void
@@ -55,6 +56,7 @@ const Modal: React.FC<{
 }
 
 // RecipeCard – radkomponent för receptlistor
+// Stöder både drag&drop (desktop) och touch-interaktioner (mobil)
 const RecipeCard: React.FC<{
   recipe: Recipe
   showOverlap?: boolean
@@ -76,7 +78,7 @@ const RecipeCard: React.FC<{
   const detailsBtnTouchStartY = useRef(0)
   const detailsBtnTouchMoved = useRef(false)
 
-  // Kolla mobilvy
+  // Detektera mobilvy för att anpassa interaktioner
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -106,6 +108,7 @@ const RecipeCard: React.FC<{
       return
     }
     
+    // På mobil: lägg till recept vid klick på kortet
     if (isMobile && onAddToDay) {
       onAddToDay()
     }
@@ -135,6 +138,7 @@ const RecipeCard: React.FC<{
     const deltaY = Math.abs(touch.clientY - touchStartY)
     
     // Om användaren har rört sig mer än 10px, räkna det som scrollning
+    // Detta förhindrar oönskade klick när användaren scrollar
     if (deltaY > 10) {
       setTouchMoved(true)
     }
@@ -149,6 +153,7 @@ const RecipeCard: React.FC<{
     }
     
     // Om användaren har scrollat, trigga inte onAddToDay
+    // Detta förhindrar oönskade åtgärder vid scrollning
     if (touchMoved) {
       return
     }
@@ -257,6 +262,7 @@ const RecipeCard: React.FC<{
 }
 
 // DayCard – en dags kolumn i veckoplanen
+// Hanterar drag&drop, touch-interaktioner och recepthantering
 interface DayCardProps {
   day: DayPlan
   isGlobalDragActive?: boolean
@@ -276,10 +282,10 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
   const removeIconTouchStartY = useRef(0)
   const removeIconTouchMoved = useRef(false)
 
-  // Lås scroll när modal(er) är öppna
+  // Lås scroll när modal(er) är öppna för bättre UX
   useScrollLock(showRecipeSelector)
 
-  // Skärmdetektering
+  // Skärmdetektering för att anpassa interaktioner
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768)
@@ -320,7 +326,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
     setIsDragOver(false)
     setDragCounter(0)
     
-    // Läs drag-data
+    // Läs drag-data från dataTransfer
     const recipe = JSON.parse(e.dataTransfer.getData('application/json'))
     if (!recipe) {
       console.warn('Invalid recipe data dropped')
@@ -330,9 +336,9 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
     const sourceDay = e.dataTransfer.getData('source-day')
     const sourceInstanceId = e.dataTransfer.getData('source-instance-id')
     
-    // Flytta mellan dagar om källan är annan dag, annars lägg till nytt
+    // Flytta mellan dagar om källan är annan dag, annars lägg till nytt recept
     if (sourceDay && sourceDay !== day.day && sourceInstanceId) {
-      // Drag-data innehåller hela måltidsinstansen
+      // Drag-data innehåller hela måltidsinstansen för flyttning
       const mealInstanceData = e.dataTransfer.getData('meal-instance')
       if (mealInstanceData) {
         try {
@@ -348,7 +354,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
         }
       }
     } else {
-      // Lägg till från receptlistan
+      // Lägg till nytt recept från receptlistan
       dispatch({
         type: 'ADD_RECIPE_TO_DAY',
         day: day.day,
@@ -367,6 +373,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
 
 
   // På mobil: hänvisa till receptlistan vid tom dag
+  // Scrollar till receptlistan och fokuserar sökfältet för bättre UX
   const handleEmptyDayClick = useCallback(() => {
     if (!isMobile) return
     const el = document.getElementById('recipe-library')
@@ -395,7 +402,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
         <h3 className="text-xs sm:text-sm font-semibold text-gray-900">{day.day}</h3>
       </div>
 
-      {/* Drop-zon med förbättrad feedback */}
+      {/* Drop-zon med förbättrad visuell feedback */}
       <div
         className={`min-h-[56px] sm:min-h-[72px] rounded-lg border-2 border-dashed transition-colors duration-200 ${
           isDragOver
@@ -413,7 +420,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
         onClick={handleDayClick}
       >
         {day.recipes.length === 0 ? (
-          // Tom dag - visa hjälptext
+          // Tom dag - visa hjälptext baserat på enhetstyp
           <div className={`h-full w-full flex flex-col items-center justify-center p-1 sm:p-2 text-center transition-colors duration-200 ${
             isDragOver ? 'text-gray-900' : 'text-gray-600'
           }`}>
@@ -438,7 +445,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
             )}
           </div>
         ) : (
-          // Recept som redan finns - visa i grid-layout
+          // Recept som redan finns - visa i responsiv grid-layout
           <div className="grid grid-cols-1 sm:grid-cols-2 auto-rows-[56px] sm:auto-rows-[72px] gap-1.5 sm:gap-2 p-1.5 sm:p-2">
             {day.recipes.map((mealInstance) => {
               const categoryColor = getCategoryColor(mealInstance.recipe.category)
@@ -452,7 +459,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
                   }}
                   draggable={!isMobile}
                   onClick={(e) => {
-                    // Stoppa bubbling så click inte triggar handleDayClick
+                    // Stoppa bubbling så klick inte triggar handleDayClick
                     e.stopPropagation()
                   }}
                   onDragStart={(e) => {
@@ -473,7 +480,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
                       </h4>
                     </div>
                     
-                    {/* Snabbåtgärder i hörnet */}
+                    {/* Snabbåtgärder i hörnet - detaljer och ta bort */}
                     <div className="absolute -top-1.5 sm:top-1/2 sm:-translate-y-1/2 -right-1.5 flex items-center gap-1">
                       {/* Visa detaljer */}
                       <button
@@ -552,6 +559,7 @@ const DayCard: React.FC<DayCardProps> = memo(({ day, isGlobalDragActive = false,
 DayCard.displayName = 'DayCard'
 
 // PlanningPage – huvudlayouten: veckoplan, alla recept, rekommendationer och inköpslista
+// Central komponent som sammanbinder alla planeringsfunktioner
 interface PlanningPageProps {
   activeFilters: Set<FilterType>
   onToggleFilter: (filter: FilterType) => void
@@ -567,7 +575,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
 }) => {
   const { state, dispatch } = useRecipeContext()
   
-  // State för ingredienser
+  // State för ingredienser och modaler
   const [showDetailedList, setShowDetailedList] = useState(false)
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set())
   const [viewMode, setViewMode] = useState<'recipe' | 'shopping'>('shopping')
@@ -589,18 +597,19 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
     })
   }
 
-  // State för rekommendationer
+  // State för rekommendationer och UI
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
   const [showRecipeDetails, setShowRecipeDetails] = useState(false)
   const [showDaySelector, setShowDaySelector] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Lås scroll när modaler är öppna
+  // Lås scroll när modaler är öppna för bättre UX
   const shouldLockScroll = useMemo(() => showDetailedList || showDaySelector, [showDetailedList, showDaySelector])
   useScrollLock(shouldLockScroll)
 
   // Ingredienser justerade efter per‑recept portionsval
+  // Beräknar totala mängder baserat på användarens portionsval
   const ingredientsWithQuantities = useMemo(() => {
     const ingredientMap = new Map<string, { totalQuantity: number, unit: string }>()
     state.weekPlan.forEach(day => {
@@ -630,7 +639,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
 
   const hasPlannedRecipes = ingredientsWithQuantities.length > 0
 
-  // Veckans datumintervall (mån–sön)
+  // Veckans datumintervall (mån–sön) - beräknar aktuell vecka
   const weekRange = useMemo(() => {
     const today = new Date()
     const jsDay = today.getDay() // 0 = sön, 1 = mån ... 6 = lör
@@ -649,7 +658,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
     return `${start.getDate()} ${months[start.getMonth()]} – ${end.getDate()} ${months[end.getMonth()]}`
   }, [])
 
-  // Toggle av inköpslistans checkboxar
+  // Toggle av inköpslistans checkboxar för att markera köpta ingredienser
   const toggleIngredient = (ingredientName: string) => {
     const newChecked = new Set(checkedIngredients)
     if (newChecked.has(ingredientName)) {
@@ -662,6 +671,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
 
 
   // Ingredienser grupperade per recept (för modalens receptvy)
+  // Organiserar ingredienser per recept för bättre översikt
   const getIngredientsByRecipe = () => {
     const recipeGroups: { [key: string]: { recipe: any, ingredients: any[] } } = {}
     
@@ -685,6 +695,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   }
 
   // Kategorisering av ingredienser (för modalens inköpslista)
+  // Grupperar ingredienser i logiska kategorier för enklare handla
   const getCategorizedIngredients = () => {
     // Normaliserar strängar för säkrare jämförelser (små bokstäver, ta bort diakritiska tecken)
     const normalize = (value: string): string =>
@@ -754,6 +765,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   }
 
   // Rekommendationer baserade på överlapp mot planerade ingredienser
+  // Sorterar recept efter antal gemensamma ingredienser
   const recommendations = useMemo(() => {
     if (!state.weekPlan.length) return []
 
@@ -785,6 +797,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   const hasRecommendations = recommendations.length > 0
 
   // Filtrerad lista över alla recept (alltid synlig)
+  // Tillämpar sökfilter och kategorifilter på receptbiblioteket
   const filteredRecipes = useMemo(() => {
     let recipes = state.recipeLibrary
 
@@ -809,7 +822,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
     return recipes
   }, [state.recipeLibrary, searchQuery, activeFilters])
 
-  // Handlers – visa detaljer, öppna dagväljare, lägga till
+  // Event handlers – visa detaljer, öppna dagväljare, lägga till recept
   const handleShowRecipeDetails = useCallback((recipe: Recipe) => {
     setSelectedRecipe(recipe)
     setShowRecipeDetails(true)
@@ -844,6 +857,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   }, [])
 
   // Skapa en komplett vecka med alla dagar
+  // Fyller i tomma dagar för att visa hela veckan
   const completeWeek = useMemo(() => {
     return Array.from(DAYS_OF_WEEK).map(dayName => {
       const existingDay = state.weekPlan.find(d => d.day === dayName)
@@ -852,7 +866,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   }, [state.weekPlan])
 
   return (
-    <div className={`max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 ${spacing.section}`}>
+    <div className={`${commonClasses.container} ${spacing.section}`}>
       <div className={`flex flex-col xl:grid xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8`}>
         {/* Veckoplan */}
         <div data-onboarding="week-planner" className="order-1 xl:order-1">

@@ -1,38 +1,37 @@
-# 🍽️ Mealwise - Smart Måltidsplanering
+# 🍽️ Mealwise
 
-En intelligent webbsida som hjälper dig spara pengar på mat genom smart veckoplanering och rekommendationer baserat på gemensamma ingredienser.
+En webbsida för smart måltidsplanering med recept och ingrediensrekommendationer.
 
-## ✨ Vad gör Mealwise?
+## Så här fungerar det
 
-Mealwise hjälper dig att:
-- **Planera veckans måltider** på ett smart sätt som minimerar matkostnader
-- **Hitta recept** som använder samma ingredienser
-- **Spara pengar** genom att eliminera matsvinn
-- **Få inspiration** från 100+ svenska recept med varianter
+### Veckoplan
+- Dra recept till dagar för att planera veckan
+- Se alla ingredienser samlade i en inköpslista
+- Justera antal portioner per recept
 
-## 🚀 Huvudfunktioner
+### Receptsökning
+- Sök bland alla recept eller filtrera på kategori
+- Få rekommendationer baserat på ingredienser du har hemma
+- Visa receptdetaljer med ingredienser och instruktioner
 
-- **Smart Veckoplanering**: Skapa effektiva veckomenyer med drag & drop
-- **100+ Svenska Recept**: Husmanskost och vardagsmat med snabba och festliga varianter
-- **Rekommendationer**: Få förslag baserat på gemensamma ingredienser
-- **Ingrediensöversikt**: Se alla ingredienser för veckan samlade på ett ställe
-- **Integritetsfokus**: Cookie-fri analytics med Plausible
+### Överraskning
+- Få ett slumpmässigt recept när du inte vet vad du ska laga
 
+## Teknisk information
 
-## 🔮 Framtida Funktioner
+- **Frontend**: React + TypeScript + Vite
+- **Styling**: Tailwind CSS
+- **Routing**: React Router
+- **State**: React Context
+- **Ikoner**: Lucide React
 
-- [ ] Användarautentisering och sparade planer
-- [ ] Ändring av antal portioner
-- [ ] Filter för kategorier
-- [ ] Fler recept och kategorier
-- [ ] Offline-stöd (PWA)
-- [ ] Export till handlingslistor
-- [ ] Näringsberäkning
+## Utveckling
 
-## 📱 Länk till projektet
+```bash
+npm install
+npm run dev
+```
 
-Besök [mealwise-ivory.vercel.app](https://mealwise-ivory.vercel.app/) för att börja planera dina måltider!
+## Länk
 
-## 📄 Licens
-
-Detta projekt är licensierat under MIT-licensen.
+[mealwise-ivory.vercel.app](https://mealwise-ivory.vercel.app/)

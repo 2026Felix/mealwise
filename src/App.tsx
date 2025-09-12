@@ -8,16 +8,16 @@ import ErrorBoundary from './components/ErrorBoundary'
 
 import { useState, useEffect, lazy, Suspense, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import ScrollToTop from './components/ScrollToTop'
 import { commonClasses, responsiveText, textColors, spacing } from './utils/uiStyles'
 import { useRecipeFilters } from './hooks/useFiltering'
 import { useScrollLock } from './hooks/useScrollControl'
 
-// Lazy load sidor som inte behövs direkt
+// Lazy load sidor som inte behövs direkt för bättre prestanda
 const Legal = lazy(() => import('./components/Legal'))
-
 const Feedback = lazy(() => import('./components/Feedback'))
 
-// Reusable components
+// Återanvändbara komponenter för konsistent UI
 interface ToolCardProps {
   to: string
   title: string
@@ -26,7 +26,7 @@ interface ToolCardProps {
 }
 
 const ToolCard: React.FC<ToolCardProps> = ({ to, title, description, ctaText }) => {
-  // Shared CTA component to avoid duplication
+  // Delad CTA-komponent för att undvika duplicering
   const CTAButton = ({ className }: { className: string }) => (
     <span className={`inline-flex items-center ${className}`}>
       {ctaText}
@@ -43,13 +43,10 @@ const ToolCard: React.FC<ToolCardProps> = ({ to, title, description, ctaText }) 
       </div>
       <div className="pt-3 group">
         <h3 className={`${responsiveText.h4} font-semibold ${textColors.primary} mb-1`}>{title}</h3>
-        <div className="h-16 relative">
-          <p className={`${textColors.subtle} ${responsiveText.small} absolute inset-0 opacity-0 transition-all duration-300 delay-75 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1`}>
-            {description}
-          </p>
-          <CTAButton className={`${responsiveText.small} font-medium ${textColors.primary} transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-1 absolute top-0 left-0`} />
-        </div>
-        <CTAButton className={`mt-1 ${responsiveText.small} font-medium ${textColors.primary} transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 translate-y-1`} />
+        <p className={`${textColors.subtle} ${responsiveText.small} mb-2`}>
+          {description}
+        </p>
+        <CTAButton className={`${responsiveText.small} font-medium ${textColors.primary}`} />
       </div>
     </Link>
   )
@@ -82,14 +79,15 @@ const BenefitCard: React.FC<BenefitCardProps> = ({ number, title, description })
 )
 
 // Navigation Component - Förenklad och förbättrad struktur
+// Hanterar både desktop och mobil navigation med responsiv design
 const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const location = useLocation()
 
-  // Lås scroll endast när mobile menu är öppet
+  // Lås scroll endast när mobilmeny är öppet för bättre UX
   useScrollLock(isMobileMenuOpen)
 
-  // Stäng mobilmeny vid ruttbyte
+  // Stäng mobilmeny automatiskt vid ruttbyte
   useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [location.pathname])
@@ -102,12 +100,12 @@ const Navigation: React.FC = () => {
     setIsMobileMenuOpen(false)
   }, [])
 
-  // Navigation items - enkel lista utan dropdowns
+  // Navigation items - enkel lista utan dropdowns för bättre tillgänglighet
   const navigationItems = [
     { to: '/plan', label: 'Veckoplan' },
-    { to: '/random', label: 'Slumpa' },
+    { to: '/random', label: 'Överraskning' },
     { to: '/what-do-you-have', label: 'Hemmafix' },
-    { to: '/recipes', label: 'Recept' },
+    { to: '/recipes', label: 'Alla recept' },
     { to: '/feedback', label: 'Feedback' }
   ]
 
@@ -127,7 +125,7 @@ const Navigation: React.FC = () => {
             </h1>
           </div>
           
-          {/* Desktop Navigation - Höger-aligned för bättre balans */}
+          {/* Desktop Navigation - Höger-aligned för bättre visuell balans */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
             {navigationItems.map((item) => (
               <Link
@@ -144,9 +142,9 @@ const Navigation: React.FC = () => {
             ))}
           </div>
 
-          {/* Right side: Dark mode toggle + Mobile toggle */}
+          {/* Höger sida: Dark mode toggle + Mobil meny toggle */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Dark mode toggle */}
+            {/* Dark mode toggle - dold på mobil, placeholder för framtida funktionalitet */}
             <button
               type="button"
               className="hidden sm:inline-flex items-center justify-center p-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -158,7 +156,7 @@ const Navigation: React.FC = () => {
               </svg>
             </button>
             
-            {/* Mobile toggle */}
+            {/* Mobil meny toggle - endast synlig på mindre skärmar */}
             <button
               type="button"
               className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-900 hover:text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -167,7 +165,7 @@ const Navigation: React.FC = () => {
               aria-label={isMobileMenuOpen ? 'Stäng meny' : 'Öppna meny'}
               onClick={toggleMobileMenu}
             >
-              {/* Förenklad hamburger icon */}
+              {/* Förenklad hamburger-ikon med smooth animationer */}
               <div className="w-6 h-6 flex flex-col items-center justify-center gap-1">
                 <div className={`w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''}`}></div>
                 <div className={`w-5 h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
@@ -178,17 +176,17 @@ const Navigation: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile menu - Förenklad slide-in från höger */}
+      {/* Mobil meny - Förenklad slide-in från höger med backdrop */}
       {isMobileMenuOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop för att stänga menyn vid klick utanför */}
           <div
             className="md:hidden fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm"
             onClick={closeMobileMenu}
             aria-hidden="true"
           />
           
-          {/* Panel */}
+          {/* Meny-panel med navigation och footer */}
           <div
             id="mobile-menu"
             role="dialog"
@@ -211,7 +209,7 @@ const Navigation: React.FC = () => {
                 </button>
               </div>
               
-              {/* Navigation Links - Förenklad lista */}
+              {/* Navigation Links - Förenklad lista med aktiv state */}
               <nav className="flex-1 p-6">
                 <div className="space-y-2">
                   {navigationItems.map((item) => (
@@ -236,7 +234,7 @@ const Navigation: React.FC = () => {
                 </div>
               </nav>
 
-              {/* Footer med dark mode toggle */}
+              {/* Footer med dark mode toggle och copyright */}
               <div className="p-6 border-t border-gray-200">
                 <div className="flex justify-center mb-4">
                   <button
@@ -264,7 +262,7 @@ const Navigation: React.FC = () => {
   )
 }
 
-// Planning Page Component
+// Planning Page Wrapper - Hanterar filter state och skickar till huvudkomponenten
 const PlanningPageWrapper: React.FC = () => {
   const { 
     activeFilters, 
@@ -283,14 +281,14 @@ const PlanningPageWrapper: React.FC = () => {
   )
 }
 
-// Home Page Component (Landing)
+// Home Page Component (Landing) - Huvudsida med hero, verktyg och fördelar
 const HomePage: React.FC = () => {
   return (
     <>
-      {/* Hero section */}
+      {/* Hero section - Huvudbudskap och CTA */}
       <section className={`${commonClasses.container} pt-16 pb-8 sm:pt-28 sm:pb-16 lg:pt-36 lg:pb-20`}>
         <div className="max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
-          {/* Left: Copy */}
+          {/* Vänster: Textinnehåll med huvudbudskap */}
           <div>
             <h1 className={`font-semibold ${responsiveText.h1} leading-[1.05] sm:leading-[1.08] text-gray-900 mb-4 sm:mb-6 lg:mb-8`}>
               <span className="block">Planera smart.</span>
@@ -320,7 +318,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Stacked cards */}
+          {/* Höger: Visuella kort i grid-layout */}
           <div className="grid grid-cols-2 grid-rows-2 gap-5 sm:gap-7">
             <div className="col-span-1 row-span-2 rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 shadow-sm h-[420px] lg:h-[460px]" />
             <div className="col-span-1 rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 shadow-sm h-[200px] lg:h-[220px]" />
@@ -329,7 +327,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Tools showcase */}
+      {/* Verktyg showcase - Visar alla tillgängliga funktioner */}
       <section id="tools-section" className={`${commonClasses.container} py-8 sm:py-12 lg:py-16 mt-4 sm:mt-8 lg:mt-12`}>
         <div className="max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto">
           <h1 className={`${responsiveText.h2} font-semibold ${textColors.primary} mb-4 sm:mb-6 lg:mb-8`}>
@@ -349,14 +347,14 @@ const HomePage: React.FC = () => {
               ctaText="Öppna verktyg"
             />
             <ToolCard 
-              to="/feedback"
-              title="Måltidstinder"
-              description="Hitta recept som passar dig och din partner."
-              ctaText="Lämna feedback"
+              to="/random"
+              title="Överraskning"
+              description="Få en slumpmässig maträtt och låt ödet välja din måltid."
+              ctaText="Öppna verktyg"
             />
             <ToolCard 
               to="/recipes"
-              title="Måltidsgambling"
+              title="Alla recept"
               description="En snabb överblick över recept. Denna vy är under uppbyggnad."
               ctaText="Se alla"
             />
@@ -364,7 +362,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* What makes Mealwise unique */}
+      {/* Vad som gör Mealwise unikt - Fördelar och värde */}
       <section className={`${commonClasses.container} pt-6 pb-8 sm:py-12 lg:py-16 mt-0 sm:mt-8 lg:mt-12`}>
         <div className="max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto">
           {/* Header */}
@@ -377,7 +375,7 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          {/* 2x2 Grid layout for 4 points */}
+          {/* 2x2 Grid layout för 4 fördelar */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             <BenefitCard 
               number="01"
@@ -406,7 +404,7 @@ const HomePage: React.FC = () => {
   )
 }
 
-// Footer Component
+// Footer Component - Copyright och länkar
 const Footer: React.FC = () => {
   return (
     <footer className={`${commonClasses.container} py-4 sm:py-6 lg:py-8 ${spacing.section} border-t border-gray-200`}>
@@ -420,13 +418,13 @@ const Footer: React.FC = () => {
           <Link to="/feedback" className="text-gray-600 hover:text-gray-900 transition-colors text-xs sm:text-sm">Feedback</Link>
         </div>
         
-        {/* Sociala ikoner dolda i beta tills riktiga profiler finns */}
+        {/* Sociala ikoner dolda i beta-fasen tills riktiga profiler finns */}
       </div>
     </footer>
   )
 }
 
-// Main App Component with Providers
+// Main App Component med alla providers och routing
 function App() {
 
   return (
@@ -434,8 +432,10 @@ function App() {
       <RecipeProvider>
         <BrowserRouter>
           <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+            <ScrollToTop />
             <Navigation />
             
+            {/* Huvudinnehåll med alla routes */}
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<HomePage />} />

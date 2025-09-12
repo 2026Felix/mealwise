@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo, useEffect } from 'react'
+import { useState, useMemo, useCallback, memo, useEffect, useRef } from 'react'
 import { useRecipeContext } from '../context/AppState'
 import { Search, ClipboardList, CookingPot, CheckCircle } from 'lucide-react'
 import { buttonStyles } from '../utils/uiStyles'
@@ -6,7 +6,7 @@ import { rankRecipesByIngredientOverlap } from '../utils/recipeHelpers'
 import { Recipe } from '../types'
 import RecipeModal from './RecipeModal'
 
-// Ingrediens-tag komponent
+// Ingrediens-tag komponent - visuell representation av valda ingredienser
 const IngredientTag: React.FC<{
   ingredient: string
   isSelected: boolean
@@ -27,6 +27,7 @@ const IngredientTag: React.FC<{
 }
 
 // Receptkort för rekommendationer - använder samma stil som huvudkomponenten
+// Stöder drag&drop på desktop och touch-interaktioner på mobil
 const RecipeCard: React.FC<{
   recipe: Recipe
   matchCount: number
@@ -35,7 +36,7 @@ const RecipeCard: React.FC<{
   const [isDragging, setIsDragging] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Detektera om användaren är på mobil
+  // Detektera mobilvy för att anpassa interaktioner
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -107,7 +108,7 @@ const RecipeCard: React.FC<{
         </div>
       </div>
 
-      {/* Desktop drag-indikator - lägre z-index så den inte täcker texten */}
+      {/* Desktop hover-indikator - lägre z-index så den inte täcker texten */}
       {!isMobile && (
         <div 
           className="absolute inset-0 bg-transparent group-hover:bg-gray-50 transition-colors rounded-lg pointer-events-none z-0"
@@ -121,14 +122,16 @@ const RecipeCard: React.FC<{
 const RecipeFinder: React.FC = memo(() => {
   const { state } = useRecipeContext()
   
-  // State
+  // State för ingrediensval, sökning och modaler
   const [selectedIngredients, setSelectedIngredients] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
   const [showRecipeDetails, setShowRecipeDetails] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   // Hämta alla unika ingredienser från receptbiblioteket
+  // Skapar en sorterad lista av alla tillgängliga ingredienser
   const allIngredients = useMemo(() => {
     const ingredients = new Set<string>()
     state.recipeLibrary.forEach(recipe => {
@@ -140,6 +143,7 @@ const RecipeFinder: React.FC = memo(() => {
   }, [state.recipeLibrary])
 
   // Populära ingredienser baserat på frekvens i receptbiblioteket
+  // Visar de 12 mest använda ingredienserna för snabbare val
   const popularIngredients = useMemo(() => {
     const ingredientCount = new Map<string, number>()
     
@@ -159,6 +163,7 @@ const RecipeFinder: React.FC = memo(() => {
   }, [state.recipeLibrary])
 
   // Filtrera ingredienser baserat på sökfältet
+  // Visar endast ingredienser som matchar söktermen
   const filteredIngredients = useMemo(() => {
     if (!searchQuery.trim()) return allIngredients
     
@@ -168,12 +173,13 @@ const RecipeFinder: React.FC = memo(() => {
   }, [allIngredients, searchQuery])
 
   // Beräkna rekommendationer baserat på valda ingredienser
+  // Använder algoritm för att ranka recept efter ingrediensöverlapp
   const recommendations = useMemo(() => {
     if (selectedIngredients.size === 0) return []
     return rankRecipesByIngredientOverlap(state.recipeLibrary, selectedIngredients)
   }, [state.recipeLibrary, selectedIngredients])
 
-  // Handlers
+  // Event handlers för ingrediensval och UI
   const toggleIngredient = useCallback((ingredient: string) => {
     const newSelected = new Set(selectedIngredients)
     if (newSelected.has(ingredient)) {
@@ -184,6 +190,10 @@ const RecipeFinder: React.FC = memo(() => {
       newSelected.add(ingredient)
       setSearchQuery('')
       setIsSearchFocused(false) // Stäng dropdown när ingrediens väljs
+      // Tappa fokus så användaren kan klicka igen för att öppna dropdown
+      if (inputRef.current) {
+        inputRef.current.blur()
+      }
     }
     setSelectedIngredients(newSelected)
   }, [selectedIngredients])
@@ -205,13 +215,9 @@ const RecipeFinder: React.FC = memo(() => {
 
     return (
     <div className="max-w-2xl mx-auto space-y-6 relative">
-      {/* Overlay bakgrund när sökfältet har fokus */}
-      {isSearchFocused && (
-        <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-30" />
-      )}
       
       {/* Header */}
-      <div className="text-center relative z-10">
+      <div className="text-center relative z-30">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
           Lägg in vad du har hemma...
         </h1>
@@ -220,10 +226,11 @@ const RecipeFinder: React.FC = memo(() => {
         </p>
       </div>
 
-                    {/* Sökfält med dropdown */}
+                    {/* Sökfält med dropdown för ingrediensval */}
        <div className="relative z-40">
          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
          <input
+           ref={inputRef}
            type="text"
            placeholder="Pasta? Lök? Ägg?"
            value={searchQuery}
@@ -233,7 +240,7 @@ const RecipeFinder: React.FC = memo(() => {
            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-900"
          />
          
-         {/* Dropdown med sökresultat */}
+         {/* Dropdown med sökresultat och populära ingredienser */}
          {isSearchFocused && (
            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
              <div className="py-2">
@@ -303,7 +310,7 @@ const RecipeFinder: React.FC = memo(() => {
 
 
 
-         {/* Valda ingredienser */}
+         {/* Valda ingredienser - visar taggar för alla valda ingredienser */}
          {selectedIngredients.size > 0 && (
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 relative z-10">
             <div className="flex items-center justify-between">
@@ -335,7 +342,7 @@ const RecipeFinder: React.FC = memo(() => {
            </div>
          )}
 
-       {/* Rekommendationer */}
+       {/* Rekommendationer - sorterade efter matchande ingredienser */}
        {recommendations.length > 0 && (
          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 relative z-10">
            <h3 className="font-medium text-gray-900 mb-4">
@@ -354,7 +361,7 @@ const RecipeFinder: React.FC = memo(() => {
          </div>
        )}
 
-      {/* Tom state */}
+      {/* Tom state - när inga recept matchar valda ingredienser */}
       {selectedIngredients.size > 0 && recommendations.length === 0 && (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -369,7 +376,7 @@ const RecipeFinder: React.FC = memo(() => {
         </div>
       )}
 
-      {/* Starta state */}
+      {/* Starta state - när inga ingredienser är valda */}
       {selectedIngredients.size === 0 && (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -381,7 +388,7 @@ const RecipeFinder: React.FC = memo(() => {
         </div>
       )}
 
-      {/* Modal för receptdetaljer */}
+      {/* Modal för receptdetaljer - visar fullständig receptinformation */}
       {selectedRecipe && showRecipeDetails && (
         <RecipeModal
           recipe={selectedRecipe}
