@@ -6,7 +6,7 @@ import { RecipeProvider } from './context/AppState'
 
 import ErrorBoundary from './components/ErrorBoundary'
 
-import { useState, useEffect, lazy, Suspense, useCallback } from 'react'
+import { useState, useEffect, lazy, Suspense, useCallback, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import ScrollToTop from './components/ScrollToTop'
 import { commonClasses, responsiveText, textColors, spacing } from './utils/uiStyles'
@@ -37,8 +37,8 @@ const ToolCard: React.FC<ToolCardProps> = ({ to, title, description, ctaText }) 
   )
 
   return (
-    <Link to={to} className="group block w-64 sm:w-72 flex-none snap-start mr-3 sm:mr-4 md:mr-0 md:w-full md:flex-1">
-      <div className="rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-md transition-shadow">
+    <Link to={to} className="group block w-full h-full">
+      <div className="rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-md transition-all duration-300 group-hover:scale-105">
         <div className="h-[280px] sm:h-[333px] bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100" />
       </div>
       <div className="pt-3 group">
@@ -59,7 +59,7 @@ interface BenefitCardProps {
 }
 
 const BenefitCard: React.FC<BenefitCardProps> = ({ number, title, description }) => (
-  <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow group border border-gray-200">
+  <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-200 hover:scale-105">
     <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
       <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
         <span className="text-xl sm:text-2xl font-bold text-gray-900 underline decoration-2 underline-offset-4">
@@ -283,13 +283,50 @@ const PlanningPageWrapper: React.FC = () => {
 
 // Home Page Component (Landing) - Huvudsida med hero, verktyg och fördelar
 const HomePage: React.FC = () => {
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
+  
+  const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections(prev => new Set(prev).add(entry.target.id))
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    )
+
+    // Observera alla sektioner
+    Object.values(sectionRefs.current).forEach(section => {
+      if (section) observer.observe(section)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
+  const setSectionRef = (id: string) => (el: HTMLDivElement | null) => {
+    sectionRefs.current[id] = el
+  }
+
   return (
     <>
       {/* Hero section - Huvudbudskap och CTA */}
-      <section className={`${commonClasses.container} pt-16 pb-8 sm:pt-28 sm:pb-16 lg:pt-36 lg:pb-20`}>
+      <section 
+        id="hero-section"
+        ref={setSectionRef('hero-section')}
+        className={`${commonClasses.container} pt-16 pb-8 sm:pt-28 sm:pb-16 lg:pt-36 lg:pb-20 ${
+          visibleSections.has('hero-section') ? 'animate-fade-in' : 'opacity-0'
+        }`}
+      >
         <div className="max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
           {/* Vänster: Textinnehåll med huvudbudskap */}
-          <div>
+          <div className={`${visibleSections.has('hero-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'}`}>
             <h1 className={`font-semibold ${responsiveText.h1} leading-[1.05] sm:leading-[1.08] text-gray-900 mb-4 sm:mb-6 lg:mb-8`}>
               <span className="block">Planera smart.</span>
               <span className="block">Ät bättre.</span>
@@ -319,7 +356,9 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Höger: Visuella kort i grid-layout */}
-          <div className="grid grid-cols-2 grid-rows-2 gap-5 sm:gap-7">
+          <div className={`grid grid-cols-2 grid-rows-2 gap-5 sm:gap-7 ${
+            visibleSections.has('hero-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+          }`} style={{ animationDelay: '200ms' }}>
             <div className="col-span-1 row-span-2 rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 shadow-sm h-[420px] lg:h-[460px]" />
             <div className="col-span-1 rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 shadow-sm h-[200px] lg:h-[220px]" />
             <div className="col-span-1 rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 shadow-sm h-[200px] lg:h-[220px]" />
@@ -328,45 +367,55 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Verktyg showcase - Visar alla tillgängliga funktioner */}
-      <section id="tools-section" className={`${commonClasses.container} py-8 sm:py-12 lg:py-16 mt-4 sm:mt-8 lg:mt-12`}>
+      <section 
+        id="tools-section"
+        ref={setSectionRef('tools-section')}
+        className={`${commonClasses.container} py-8 sm:py-12 lg:py-16 mt-4 sm:mt-8 lg:mt-12 ${
+          visibleSections.has('tools-section') ? 'animate-fade-in' : 'opacity-0'
+        }`}
+      >
         <div className="max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto">
-          <h1 className={`${responsiveText.h2} font-semibold ${textColors.primary} mb-4 sm:mb-6 lg:mb-8`}>
+          <h1 className={`${responsiveText.h2} font-semibold ${textColors.primary} mb-4 sm:mb-6 lg:mb-8 ${
+            visibleSections.has('tools-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+          }`}>
             Något som passar dig
           </h1>
-          <div className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide md:grid md:grid-cols-4 md:gap-8 md:overflow-hidden md:snap-none">
-            <ToolCard 
-              to="/plan"
-              title="Veckoplan"
-              description="Planera dina måltider och få smarta rekommendationer samt inköpslista."
-              ctaText="Öppna verktyg"
-            />
-            <ToolCard 
-              to="/what-do-you-have"
-              title="Hemmafix"
-              description="Välj ingredienser du har hemma och få recept som matchar."
-              ctaText="Öppna verktyg"
-            />
-            <ToolCard 
-              to="/random"
-              title="Överraskning"
-              description="Få en slumpmässig maträtt och låt ödet välja din måltid."
-              ctaText="Öppna verktyg"
-            />
-            <ToolCard 
-              to="/recipes"
-              title="Alla recept"
-              description="En snabb överblick över recept. Denna vy är under uppbyggnad."
-              ctaText="Se alla"
-            />
+          <div className={`flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide md:grid md:grid-cols-4 md:gap-8 md:overflow-hidden md:snap-none ${
+            visibleSections.has('tools-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+          }`} style={{ animationDelay: '200ms' }}>
+            {[
+              { to: "/plan", title: "Veckoplan", description: "Planera dina måltider och få smarta rekommendationer samt inköpslista.", ctaText: "Öppna verktyg" },
+              { to: "/what-do-you-have", title: "Hemmafix", description: "Välj ingredienser du har hemma och få recept som matchar.", ctaText: "Öppna verktyg" },
+              { to: "/random", title: "Överraskning", description: "Få en slumpmässig maträtt och låt ödet välja din måltid.", ctaText: "Öppna verktyg" },
+              { to: "/recipes", title: "Alla recept", description: "En snabb överblick över recept. Denna vy är under uppbyggnad.", ctaText: "Se alla" }
+            ].map((tool, index) => (
+              <div 
+                key={tool.to}
+                className={`w-64 sm:w-72 flex-none snap-start mr-3 sm:mr-4 md:mr-0 md:w-full md:flex-1 ${
+                  visibleSections.has('tools-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+                }`}
+                style={{ animationDelay: `${400 + (index * 100)}ms` }}
+              >
+                <ToolCard {...tool} />
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Vad som gör Mealwise unikt - Fördelar och värde */}
-      <section className={`${commonClasses.container} pt-6 pb-8 sm:py-12 lg:py-16 mt-0 sm:mt-8 lg:mt-12`}>
+      <section 
+        id="benefits-section"
+        ref={setSectionRef('benefits-section')}
+        className={`${commonClasses.container} pt-6 pb-8 sm:py-12 lg:py-16 mt-0 sm:mt-8 lg:mt-12 ${
+          visibleSections.has('benefits-section') ? 'animate-fade-in' : 'opacity-0'
+        }`}
+      >
         <div className="max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          <div className={`text-center mb-8 sm:mb-12 lg:mb-16 ${
+            visibleSections.has('benefits-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+          }`}>
             <h2 className={`${responsiveText.h2} font-semibold ${textColors.primary} mb-3 sm:mb-4`}>
               Därför är det värdefullt
             </h2>
@@ -376,27 +425,25 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* 2x2 Grid layout för 4 fördelar */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <BenefitCard 
-              number="01"
-              title="Spara tid"
-              description="Planera och inhandla smart med olika verktyg. Mer tid till dig och vad som betyder något."
-            />
-            <BenefitCard 
-              number="02"
-              title="Spara pengar"
-              description="Mindre matsvinn, smartare inköp och en mer flexibel plånbok. Ta hand om jordens och dina resurser."
-            />
-            <BenefitCard 
-              number="03"
-              title="Allt på ett ställe"
-              description="Planera, recept, inköpslistor och rekommendationer. Allt på ett ställe, allt för att underlätta."
-            />
-            <BenefitCard 
-              number="04"
-              title="Inspiration"
-              description="Upptäck nya favoriter och få smarta rekommendationer baserat på dina preferenser."
-            />
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 ${
+            visibleSections.has('benefits-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+          }`} style={{ animationDelay: '200ms' }}>
+            {[
+              { number: "01", title: "Spara tid", description: "Planera och inhandla smart med olika verktyg. Mer tid till dig och vad som betyder något." },
+              { number: "02", title: "Spara pengar", description: "Mindre matsvinn, smartare inköp och en mer flexibel plånbok. Ta hand om jordens och dina resurser." },
+              { number: "03", title: "Allt på ett ställe", description: "Planera, recept, inköpslistor och rekommendationer. Allt på ett ställe, allt för att underlätta." },
+              { number: "04", title: "Inspiration", description: "Upptäck nya favoriter och få smarta rekommendationer baserat på dina preferenser." }
+            ].map((benefit, index) => (
+              <div 
+                key={benefit.number}
+                className={`${
+                  visibleSections.has('benefits-section') ? 'animate-slide-up' : 'opacity-0 translate-y-8'
+                }`}
+                style={{ animationDelay: `${400 + (index * 100)}ms` }}
+              >
+                <BenefitCard {...benefit} />
+              </div>
+            ))}
           </div>
         </div>
       </section>

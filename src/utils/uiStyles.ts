@@ -55,7 +55,7 @@ export const buttonStyles = {
   iconTransparentClose: 'p-2 text-gray-400 hover:text-gray-600 hover:border hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 rounded-lg',
 
   // Tab-knappar
-  tab: 'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+  tab: 'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-center',
   tabActive: 'bg-white text-gray-900 shadow-sm border border-gray-200',
   tabInactive: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
 

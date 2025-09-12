@@ -29,6 +29,7 @@ const Randomizer: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<number>(0)
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
   const [showRecipeDetails, setShowRecipeDetails] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [preferences, setPreferences] = useState<{
     location: 'home' | 'restaurant' | null
     restaurantType: 'snabbt' | 'fancy' | 'vad_som' | null
@@ -91,21 +92,27 @@ const Randomizer: React.FC = () => {
   }, [state.recipeLibrary, preferences.filters])
 
   const randomize = useCallback(() => {
-    if (preferences.location === 'home') {
-      const sample = getRandomSample(filteredRecipes, mealCount)
-      setResults(sample)
-      setRestaurantResults([])
-      // Förifyll dag-val till första dagen i listan
-      const defaultDay = DAYS_OF_WEEK[0]
-      const next: Record<string, string> = {}
-      sample.forEach(r => { next[String(r.id)] = defaultDay })
-      setSelectedDays(next)
-    } else if (preferences.location === 'restaurant') {
-      const sample = getRandomSample(restaurantCategories, 1) // Always 1 for "Restaurang"
-      setRestaurantResults(sample)
-      setResults([])
-    }
+    setIsLoading(true)
     setShowQuestions(false)
+    
+    // Simulate loading time for suspense
+    setTimeout(() => {
+      if (preferences.location === 'home') {
+        const sample = getRandomSample(filteredRecipes, mealCount)
+        setResults(sample)
+        setRestaurantResults([])
+        // Förifyll dag-val till första dagen i listan
+        const defaultDay = DAYS_OF_WEEK[0]
+        const next: Record<string, string> = {}
+        sample.forEach(r => { next[String(r.id)] = defaultDay })
+        setSelectedDays(next)
+      } else if (preferences.location === 'restaurant') {
+        const sample = getRandomSample(restaurantCategories, 1) // Always 1 for "Restaurang"
+        setRestaurantResults(sample)
+        setResults([])
+      }
+      setIsLoading(false)
+    }, 3000) // 3 second loading animation
   }, [mealCount, filteredRecipes, restaurantCategories, preferences.location])
 
   const resetQuestions = useCallback(() => {
@@ -113,6 +120,7 @@ const Randomizer: React.FC = () => {
     setCurrentQuestion(0)
     setResults([])
     setRestaurantResults([])
+    setIsLoading(false)
     setPreferences({ location: null, restaurantType: null, filters: new Set() })
   }, [])
 
@@ -167,7 +175,7 @@ const Randomizer: React.FC = () => {
           Svårt att bestämma?
         </h1>
         <h2 className={`text-xl sm:text-2xl font-semibold text-gray-600 text-center`}>
-          Slumpa.
+          Låt det bli en överraskning.
         </h2>
       </div>
 
@@ -192,7 +200,7 @@ const Randomizer: React.FC = () => {
                           setPreferences(prev => ({ ...prev, location: 'home', restaurantType: null }))
                           setTimeout(nextQuestion, 300)
                         }}
-                        className={`px-8 py-4 rounded-xl border-2 transition-all duration-200 ${
+                        className={`px-8 py-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center ${
                           preferences.location === 'home'
                             ? 'border-gray-900 bg-gray-900 text-white shadow-lg'
                             : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:shadow-md'
@@ -206,7 +214,7 @@ const Randomizer: React.FC = () => {
                           setPreferences(prev => ({ ...prev, location: 'restaurant' }))
                           setTimeout(nextQuestion, 300)
                         }}
-                        className={`px-8 py-4 rounded-xl border-2 transition-all duration-200 ${
+                        className={`px-8 py-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center ${
                           preferences.location === 'restaurant'
                             ? 'border-gray-900 bg-gray-900 text-white shadow-lg'
                             : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:shadow-md'
@@ -388,10 +396,34 @@ const Randomizer: React.FC = () => {
               </div>
             </div>
           </div>
-        ) : (
+        ) : isLoading ? (
           <div className="space-y-6">
+            {/* Loading animation */}
+            <div className="text-center py-12">
+              <div className="space-y-6">
+                {/* Loading text */}
+                <div className="space-y-2">
+                  <p className="text-xl font-semibold text-gray-900">
+                    {preferences.location === 'home' 
+                      ? 'Hittar recept åt dig' 
+                      : 'Hittar restaurang åt dig'
+                    }
+                  </p>
+                </div>
+                
+                {/* Bouncing dots */}
+                <div className="flex justify-center space-x-2">
+                  <div className="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6 animate-fade-in">
             {/* Personalized results header */}
-            <div className="text-center">
+            <div className="text-center animate-slide-up">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {preferences.location === 'home' 
                   ? `Här är dina ${mealCount} slumpade recept!` 
@@ -402,8 +434,12 @@ const Randomizer: React.FC = () => {
 
             {results.length > 0 ? (
               <div className="space-y-3 text-center">
-                {results.map((recipe) => (
-                  <div key={recipe.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                {results.map((recipe, index) => (
+                  <div 
+                    key={recipe.id} 
+                    className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between animate-slide-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                     <h3 className="text-lg font-medium text-gray-900">{recipe.name}</h3>
                     <button
                       onClick={() => handleShowRecipeDetails(recipe)}
@@ -419,7 +455,11 @@ const Randomizer: React.FC = () => {
             ) : restaurantResults.length > 0 ? (
               <div className="space-y-3 text-center">
                 {restaurantResults.map((category, index) => (
-                  <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+                  <div 
+                    key={index} 
+                    className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center animate-slide-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                     <h3 className="text-lg font-medium text-gray-900">{category}</h3>
                     <div className="mt-3">
                       <a
@@ -436,7 +476,7 @@ const Randomizer: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-gray-600 text-center">Välj antal och klicka på Slumpa.</div>
+              <div className="text-sm text-gray-600 text-center animate-slide-up">Välj antal och klicka på Slumpa.</div>
             )}
 
             {/* Action buttons - moved below results */}

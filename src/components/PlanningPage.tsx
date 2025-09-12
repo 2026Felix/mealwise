@@ -581,6 +581,11 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
   const [viewMode, setViewMode] = useState<'recipe' | 'shopping'>('shopping')
   // Per-recept portionskontroll för "Veckans rätter"-vyn i modalen
   const [recipePortions, setRecipePortions] = useState<Record<string, number>>({})
+  
+  // State för användarens egna inköpslistobjekt
+  const [customItems, setCustomItems] = useState<Array<{id: string, name: string}>>([])
+  const [newItemName, setNewItemName] = useState('')
+  const [showAddItemForm, setShowAddItemForm] = useState(false)
 
   // Hjälpare för portionsnyckel (föredra id om det finns)
   const getRecipeKey = (recipe: any): string => (recipe?.id ? String(recipe.id) : String(recipe?.name ?? ''))
@@ -669,6 +674,34 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
     setCheckedIngredients(newChecked)
   }
 
+  // Hantera användarens egna inköpslistobjekt
+  const addCustomItem = () => {
+    if (newItemName.trim()) {
+      const newItem = {
+        id: `custom-${Date.now()}`,
+        name: newItemName.trim()
+      }
+      setCustomItems(prev => [...prev, newItem])
+      setNewItemName('')
+      setShowAddItemForm(false)
+    }
+  }
+
+  const removeCustomItem = (itemId: string) => {
+    setCustomItems(prev => prev.filter(item => item.id !== itemId))
+    // Ta också bort från checkedIngredients om det var markerat
+    const item = customItems.find(item => item.id === itemId)
+    if (item) {
+      const newChecked = new Set(checkedIngredients)
+      newChecked.delete(item.name)
+      setCheckedIngredients(newChecked)
+    }
+  }
+
+  const isCustomItem = (ingredientName: string): boolean => {
+    return customItems.some(item => item.name === ingredientName)
+  }
+
 
   // Ingredienser grupperade per recept (för modalens receptvy)
   // Organiserar ingredienser per recept för bättre översikt
@@ -740,8 +773,39 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
 
     const categorized: { [key: string]: any[] } = {}
 
+    // Lägg till recept-ingredienser
     ingredientsWithQuantities.forEach(ingredient => {
       const name = normalize(ingredient.name)
+      let assigned = false
+
+      for (const [category, keywords] of Object.entries(categories)) {
+        const match = keywords.some(keyword => name.includes(normalize(keyword)))
+        if (match) {
+          if (!categorized[category]) categorized[category] = []
+          categorized[category].push(ingredient)
+          assigned = true
+          break
+        }
+      }
+
+      // Om ingen kategori matchar, lägg i "Övrigt"
+      if (!assigned) {
+        if (!categorized['Övrigt']) categorized['Övrigt'] = []
+        categorized['Övrigt'].push(ingredient)
+      }
+    })
+
+    // Lägg till användarens egna objekt
+    customItems.forEach(item => {
+      const ingredient = {
+        name: item.name,
+        totalQuantity: '',
+        unit: '',
+        isCustom: true,
+        id: item.id
+      }
+      
+      const name = normalize(item.name)
       let assigned = false
 
       for (const [category, keywords] of Object.entries(categories)) {
@@ -1022,7 +1086,7 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900">
-                      Inköpslista ({ingredientsWithQuantities.length})
+                      Inköpslista ({ingredientsWithQuantities.length + customItems.length})
                     </h2>
                   </div>
                 </div>
@@ -1149,33 +1213,47 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                         </div>
                         <div className="divide-y divide-gray-200">
                           {ingredients.map((ingredient, index) => (
-                            <label key={index} className={`flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            <div key={index} className={`flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
                               checkedIngredients.has(ingredient.name) ? 'line-through text-gray-400' : ''
                             }`}>
-                              <div className="relative">
-                                <input
-                                  type="checkbox"
-                                  checked={checkedIngredients.has(ingredient.name)}
-                                  onChange={() => toggleIngredient(ingredient.name)}
-                                  className="sr-only"
-                                />
-                                <div className={`${buttonStyles.checkbox} ${
-                                  checkedIngredients.has(ingredient.name)
-                                    ? buttonStyles.checkboxActive
-                                    : buttonStyles.checkboxInactive
-                                }`}>
-                                  {checkedIngredients.has(ingredient.name) && (
-                                    <Check className="w-3 h-3 text-white" />
-                                  )}
+                              <label className="flex items-center gap-3 flex-1 cursor-pointer">
+                                <div className="relative">
+                                  <input
+                                    type="checkbox"
+                                    checked={checkedIngredients.has(ingredient.name)}
+                                    onChange={() => toggleIngredient(ingredient.name)}
+                                    className="sr-only"
+                                  />
+                                  <div className={`${buttonStyles.checkbox} ${
+                                    checkedIngredients.has(ingredient.name)
+                                      ? buttonStyles.checkboxActive
+                                      : buttonStyles.checkboxInactive
+                                  }`}>
+                                    {checkedIngredients.has(ingredient.name) && (
+                                      <Check className="w-3 h-3 text-white" />
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex-1 font-medium text-gray-900">
-                                {ingredient.name}
-                              </div>
-                              <div className="text-gray-900 text-sm">
-                                {ingredient.totalQuantity} {ingredient.unit}
-                              </div>
-                            </label>
+                                <div className="flex-1 font-medium text-gray-900">
+                                  {ingredient.name}
+                                </div>
+                                {!ingredient.isCustom && (
+                                  <div className="text-gray-900 text-sm">
+                                    {ingredient.totalQuantity} {ingredient.unit}
+                                  </div>
+                                )}
+                              </label>
+                              {/* Ta bort-knapp endast för användarens egna objekt */}
+                              {ingredient.isCustom && (
+                                <button
+                                  onClick={() => removeCustomItem(ingredient.id)}
+                                  className={`${buttonStyles.iconTransparentSmall} text-gray-400 hover:text-red-600 hover:bg-red-50`}
+                                  title="Ta bort objekt"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -1183,15 +1261,61 @@ const PlanningPage: React.FC<PlanningPageProps> = memo(({
                   </div>
                 )}
 
-                {/* Sammanfattning endast för inköpslistan */}
+                {/* Lägg till egna objekt - endast för inköpslistan */}
                 {viewMode === 'shopping' && (
                   <div className="mt-6 pt-4 border-t border-gray-200">
+                    {!showAddItemForm ? (
+                      <button
+                        onClick={() => setShowAddItemForm(true)}
+                        className="w-full p-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Lägg till eget objekt
+                      </button>
+                    ) : (
+                      <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-200">
+                        <h4 className="font-semibold text-gray-900 text-sm">Behöver du något annat?</h4>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Toalettpapper?"
+                            value={newItemName}
+                            onChange={(e) => setNewItemName(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addCustomItem()}
+                            className={`${commonClasses.input} flex-1`}
+                            autoFocus
+                          />
+                          <button
+                            onClick={addCustomItem}
+                            disabled={!newItemName.trim()}
+                            className={`${buttonStyles.gradientSmall} disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            Lägg till
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAddItemForm(false)
+                              setNewItemName('')
+                            }}
+                            className={buttonStyles.action}
+                          >
+                            Avbryt
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Sammanfattning endast för inköpslistan */}
+                {viewMode === 'shopping' && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="text-center text-sm">
-                      {checkedIngredients.size >= ingredientsWithQuantities.length ? (
+                      {checkedIngredients.size >= (ingredientsWithQuantities.length + customItems.length) ? (
                         <span className="text-gray-900 font-medium">Du har allt!</span>
                       ) : (
                         <span className="text-gray-600">
-                          Kvar: {ingredientsWithQuantities.length - checkedIngredients.size} av {ingredientsWithQuantities.length}
+                          Kvar: {(ingredientsWithQuantities.length + customItems.length) - checkedIngredients.size} av {ingredientsWithQuantities.length + customItems.length}
                         </span>
                       )}
                     </div>
